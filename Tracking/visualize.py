@@ -17,8 +17,8 @@ def plot_static_objects(image, traffic_lights_bbox, traffic_light_color):
     color_str_tuple_map = {"green": (0, 255, 0), "red": (0, 0, 255), "yellow": (0, 255, 255)}
     cv2.rectangle(
         image,
-        (int(traffic_lights_bbox[1]), int(traffic_lights_bbox[0])),
-        (int(traffic_lights_bbox[3]), int(traffic_lights_bbox[2])),
+        (traffic_lights_bbox[0], traffic_lights_bbox[1]),
+        (traffic_lights_bbox[0] + traffic_lights_bbox[2], traffic_lights_bbox[1] + traffic_lights_bbox[3]),
         color=color_str_tuple_map[traffic_light_color],
         thickness=1
     )

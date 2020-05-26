@@ -100,10 +100,20 @@ class Yolo4:
             predicted_class = self.class_names[c]
             if predicted_class not in self.target_class:
                 continue
-            box = out_boxes[i]
+            box = tuple(out_boxes[i])
+            x = int(box[1])
+            y = int(box[0])
+            w = int(box[3] - box[1])
+            h = int(box[2] - box[0])
+            if x < 0:
+                w = w + x
+                x = 0
+            if y < 0:
+                h = h + y
+                y = 0
             score = out_scores[i]
 
-            return_boxs.append(tuple(box))
+            return_boxs.append([x, y, w, h])
             return_class_names.append(predicted_class)
 
         return return_boxs, return_class_names

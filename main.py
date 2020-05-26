@@ -1,5 +1,8 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import argparse
 import warnings
+warnings.filterwarnings("ignore")
 
 from PIL import Image
 
@@ -11,13 +14,11 @@ from Tracking.DeepSort.deep_sort import preprocessing, nn_matching
 from Tracking.DeepSort.deep_sort.detection import Detection
 from Tracking.DeepSort.deep_sort.tracker import Tracker
 from Tracking.DeepSort.tools import generate_detections as gdet
-from Tracking.DeepSort.yolo import YOLO
 from Tracking.utils import *
 from Tracking.visualize import *
 
 import LPR.lpr as lpr
 
-warnings.filterwarnings("ignore")
 
 result_root = "./Result"
 
@@ -65,9 +66,8 @@ def get_result(dataloader, save_dir):
 
     # Static jobs: traffic light detection
     traffic_lights_bboxes = static_process(dataloader)
-    print(traffic_lights_bboxes)
 
-    yolo = YOLO(["person", "car"])
+    yolo = Yolo4(["person", "car"])
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     tracker = Tracker(metric)
 
@@ -81,7 +81,7 @@ def get_result(dataloader, save_dir):
     # Deal with every frame
     for path, frame, img in dataloader:
         if frame_id % 20 == 0:
-            logging.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
+            print('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
 
         timer.tic()
         # Start object detection
@@ -116,8 +116,8 @@ def get_result(dataloader, save_dir):
         # Traffic light result
         for bbox in traffic_lights_bboxes:
             img = np.array(frame)  # Convert to numpy object
-            x1, x2, y1, y2 = int(bbox[0]), int(bbox[2]), int(bbox[1]), int(bbox[3])
-            roi = img[x1:x2, y1:y2, :]
+            x, y, w, h = bbox[0], bbox[1], bbox[2], bbox[3]
+            roi = img[y:y + h, x:x + w, :]
             color = get_traffic_light_color(roi)
             frame = plot_static_objects(frame, traffic_lights_bbox=bbox, traffic_light_color=color)
 

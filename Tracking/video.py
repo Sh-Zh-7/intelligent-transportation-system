@@ -10,10 +10,10 @@ class Video:
 
         self.width = img_size[0]
         self.height = img_size[1]
-        self.count = 0
+        self.count = -1
 
         self.w, self.h = 1920, 1080
-        print('Length of the video: {:d} frames'.format(self.vn))
+        print("Length of the video: {:d} frames".format(self.vn))
 
     def get_size(self, vw, vh, dw, dh):
         wa, ha = float(dw) / vw, float(dh) / vh
@@ -22,10 +22,11 @@ class Video:
 
     def get_one_frame(self):
         _, frame = self.cap.read()
+        self.count += 1
         return frame
 
     def __iter__(self):
-        self.count = -1
+        # self.count = -1
         return self
 
     def __next__(self):
