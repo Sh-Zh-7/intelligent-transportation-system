@@ -1,12 +1,8 @@
 import os
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import argparse
 import warnings
-
 warnings.filterwarnings("ignore")
-
-from PIL import Image
 
 from Detection.keras_yolov4.yolo import Yolo4
 from Detection.traffic_light import get_traffic_light_color
@@ -27,6 +23,10 @@ max_cosine_distance = 0.5
 nn_budget = None
 nms_max_overlap = 0.3
 
+# Store id and [license_content, confident]
+license_set = {}
+global_count = 0
+global_ids = set()
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -34,6 +34,16 @@ def get_args():
 
     args = parser.parse_args()
     return args
+
+def get_traffic_statistic(img, obj_id, obj_category, obj_tlwh):
+    target_class = ["car"]
+
+    global global_count, global_ids
+    if obj_category in target_class and obj_id not in global_ids:
+        upper, lower = int(obj_tlwh[1]), int(obj_tlwh[1] + obj_tlwh[3])
+        if upper < img.shape[0] // 2 < lower:
+            global_count += 1
+            global_ids.add(obj_id)
 
 
 def further_process(img, obj_id, obj_category, obj_tlwh):
@@ -48,10 +58,17 @@ def further_process(img, obj_id, obj_category, obj_tlwh):
     # License plate recognize
     if obj_category == "car":
         roi = img[
-              obj_tlwh[0]:obj_tlwh[0] + obj_tlwh[2],
-              obj_tlwh[1]:obj_tlwh[1] + obj_tlwh[3],
+              int(obj_tlwh[1]): int(obj_tlwh[1] + obj_tlwh[3]),
+              int(obj_tlwh[0]):int(obj_tlwh[0] + obj_tlwh[2]),
               :]
-        license_plate = lpr.license_plate_recognize(roi)
+        license_content, confidence = lpr.license_plate_recognize(roi)
+        if obj_id in license_set:
+            if confidence > license_set[obj_id][1]:
+                license_set[obj_id][1] = confidence
+                license_set[obj_id][0] = license_content
+        else:
+            license_set[obj_id] = [license_content, confidence]
+    get_traffic_statistic(img, obj_id, obj_category, obj_tlwh)
 
 
 def static_process(model, video):
@@ -64,13 +81,15 @@ def static_process(model, video):
 
 
 def get_result(dataloader, save_dir):
+    global global_count
+
     mkdir_if_missing(save_dir)
 
     # --------------------------------------------Detection---------------------------------------------------
     yolo = Yolo4()
     traffic_lights_bboxes = static_process(yolo, dataloader)
 
-    yolo.set_detection_class(["person", "car"])
+    yolo.set_detection_class(["person", "car", "motorbike"])
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     tracker = Tracker(metric)
 
@@ -110,17 +129,28 @@ def get_result(dataloader, save_dir):
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
+            # Set min box area, otherwise the lpr won't recognize it
             online_ids.append(int(track.track_id))
             online_classes.append(track.category)
             online_tlwhs.append(tuple(track.to_tlwh()))
 
-            # further_process(np.array(frame), int(track.track_id), track.category, tuple(track.to_tlwh()))
+            further_process(np.array(frame), int(track.track_id), track.category, tuple(track.to_tlwh()))
         timer.toc()
 
         # -------------------------------------------PLOT----------------------------------------------------
         # Save tracking results
         # results.append((frame_id + 1, online_tlwhs, online_ids))
-        online_im = plot_tracking(np.array(frame), online_tlwhs, online_ids, online_classes, frame_id=frame_id,
+        # 只能用整除，所以得用//
+        frame = cv2.line(frame, (0, frame.shape[0] // 2), (frame.shape[1], frame.shape[0] // 2), color=(0, 0, 255), thickness=3)
+        cv2.putText(frame, "Car counts: {}".format(global_count),
+                    (frame.shape[1] // 2, frame.shape[0] // 2),
+                    cv2.FONT_HERSHEY_PLAIN, 3, (0, 0, 255),
+                    thickness=3
+                    )
+
+        online_im = plot_tracking(np.array(frame), online_tlwhs, online_ids, online_classes,
+                                  license_set=license_set,
+                                  frame_id=frame_id,
                                   fps=1. / timer.average_time)
 
         # Traffic light result
