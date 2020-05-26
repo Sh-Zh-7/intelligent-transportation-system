@@ -1,7 +1,9 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import argparse
 import warnings
+
 warnings.filterwarnings("ignore")
 
 from PIL import Image
@@ -18,7 +20,6 @@ from Tracking.utils import *
 from Tracking.visualize import *
 
 import LPR.lpr as lpr
-
 
 result_root = "./Result"
 
@@ -52,6 +53,7 @@ def further_process(img, obj_id, obj_category, obj_tlwh):
               :]
         license_plate = lpr.license_plate_recognize(roi)
 
+
 def static_process(model, video):
     img = video.get_one_frame()
     img = Image.fromarray(img[..., ::-1])
@@ -64,7 +66,7 @@ def static_process(model, video):
 def get_result(dataloader, save_dir):
     mkdir_if_missing(save_dir)
 
-    # Static jobs: traffic light detection
+    # --------------------------------------------Detection---------------------------------------------------
     yolo = Yolo4()
     traffic_lights_bboxes = static_process(yolo, dataloader)
 
@@ -81,25 +83,26 @@ def get_result(dataloader, save_dir):
 
     # Deal with every frame
     for path, frame, img in dataloader:
+        # Print PFS information
         if frame_id % 20 == 0:
             print('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
 
+        # -----------------------------------------TRACKING----------------------------------------------------
         timer.tic()
         # Start object detection
         img = Image.fromarray(frame[..., ::-1])
         boxs, class_names = yolo.detect_image(img)
         features = encoder(frame, boxs)
-        detections = [Detection(bbox, 1.0, feature, class_name) for bbox, feature, class_name in zip(boxs, features, class_names)]
+        detections = [Detection(bbox, 1.0, feature, class_name) for bbox, feature, class_name in
+                      zip(boxs, features, class_names)]
         # Run NMS
         boxes = np.array([d.tlwh for d in detections])
         scores = np.array([d.confidence for d in detections])
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
-
         # Call the tracker
         tracker.predict()
         tracker.update(detections)
-
         # Store tracker result
         online_ids = []
         online_classes = []
@@ -114,18 +117,19 @@ def get_result(dataloader, save_dir):
             # further_process(np.array(frame), int(track.track_id), track.category, tuple(track.to_tlwh()))
         timer.toc()
 
+        # -------------------------------------------PLOT----------------------------------------------------
+        # Save tracking results
+        # results.append((frame_id + 1, online_tlwhs, online_ids))
+        online_im = plot_tracking(np.array(frame), online_tlwhs, online_ids, online_classes, frame_id=frame_id,
+                                  fps=1. / timer.average_time)
+
         # Traffic light result
         for bbox in traffic_lights_bboxes:
-            img = np.array(frame)  # Convert to numpy object
+            img = np.array(online_im)  # Convert to numpy object
             x, y, w, h = bbox[0], bbox[1], bbox[2], bbox[3]
             roi = img[y:y + h, x:x + w, :]
             color = get_traffic_light_color(roi)
-            frame = plot_static_objects(frame, traffic_lights_bbox=bbox, traffic_light_color=color)
-
-        # Save tracking results
-        results.append((frame_id + 1, online_tlwhs, online_ids))
-        online_im = plot_tracking(np.array(frame), online_tlwhs, online_ids, online_classes, frame_id=frame_id,
-                                  fps=1. / timer.average_time)
+            online_im = plot_static_objects(online_im, traffic_lights_bbox=bbox, traffic_light_color=color)
 
         # Save plot images
         cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)

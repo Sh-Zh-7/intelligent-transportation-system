@@ -1,10 +1,9 @@
 import cv2
 import numpy as np
+from PIL import Image, ImageFont, ImageDraw
 
 
 def get_color(category):
-    # idx = idx * 3
-    # color = ((37 * idx) % 255, (17 * idx) % 255, (29 * idx) % 255)
     if category == "person":
         # Blue
         return 255, 0, 0
@@ -15,15 +14,7 @@ def get_color(category):
 
 def plot_static_objects(image, traffic_lights_bbox, traffic_light_color):
     color_str_tuple_map = {"green": (0, 255, 0), "red": (0, 0, 255), "yellow": (0, 255, 255)}
-    cv2.rectangle(
-        image,
-        (traffic_lights_bbox[0], traffic_lights_bbox[1]),
-        (traffic_lights_bbox[0] + traffic_lights_bbox[2], traffic_lights_bbox[1] + traffic_lights_bbox[3]),
-        color=color_str_tuple_map[traffic_light_color],
-        thickness=1
-    )
-    cv2.putText(image, "traffic light", (int(traffic_lights_bbox[0]), int(traffic_lights_bbox[3]) + 30),
-                cv2.FONT_HERSHEY_PLAIN, 1, (225, 255, 255), thickness=1)
+    image = plot_rectangle(image, "traffic light", traffic_lights_bbox, color_str_tuple_map[traffic_light_color])
     return image
 
 
@@ -31,23 +22,46 @@ def plot_tracking(image, tlwhs, obj_ids, obj_classes, frame_id=0, fps=0., ids2=N
     im = np.ascontiguousarray(np.copy(image))
 
     text_scale = max(1, image.shape[1] / 1600.)
-    text_thickness = 1 if text_scale > 1.1 else 1
-    line_thickness = max(1, int(image.shape[1] / 500.))
-
     cv2.putText(im, 'frame: %d fps: %.2f num: %d' % (frame_id, fps, len(tlwhs)),
                 (0, int(15 * text_scale)), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255), thickness=2)
 
     for i, tlwh in enumerate(tlwhs):
-        x1, y1, w, h = tlwh
-        intbox = tuple(map(int, (x1, y1, x1 + w, y1 + h)))
-        obj_id = int(obj_ids[i])
-        obj_class = obj_classes[i]
-        id_text = '{}'.format(int(obj_id))
-        if ids2 is not None:
-            id_text = id_text + ', {}'.format(int(ids2[i]))
-        _line_thickness = 1 if obj_id <= 0 else line_thickness
-        color = get_color(obj_class)
-        cv2.rectangle(im, intbox[0:2], intbox[2:4], color=color, thickness=line_thickness)
-        cv2.putText(im, obj_class, (intbox[0], intbox[3] + 30), cv2.FONT_HERSHEY_PLAIN, text_scale, (225, 255, 255),
-                    thickness=text_thickness)
+        im = plot_rectangle(im, obj_classes[i], tlwh, get_color(obj_classes[i]))
     return im
+
+
+def plot_rectangle(img, obj_class, tlwh, color):
+    # Set font type and thickness
+    image = Image.fromarray(img.copy())
+    font = ImageFont.truetype(font="./Detection/keras_yolov4/font/FiraMono-Medium.otf",
+                              size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
+    thickness = (image.size[0] + image.size[1]) // 300
+
+    # Set labels
+    label = "{}".format(obj_class)
+    draw = ImageDraw.Draw(image)
+    label_size = draw.textsize(label, font)
+
+    # Calculate bbox's position
+    left, top, height, width = tlwh
+    buttom, right = top + width, left + height
+
+    if top - label_size[1] >= 0:
+        text_origin = np.array([left, top - label_size[1]])
+    else:
+        text_origin = np.array([left, top + 1])
+
+    for i in range(thickness):
+        draw.rectangle(
+            [left + i, top + i, right - i, buttom - i],
+            outline=color)
+    draw.rectangle(
+        [tuple(text_origin), tuple(text_origin + label_size)],
+        fill=color)
+    draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+    del draw
+
+    return np.array(image)
+
+
+
