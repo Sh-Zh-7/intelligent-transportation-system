@@ -52,12 +52,12 @@ def further_process(img, obj_id, obj_category, obj_tlwh):
               :]
         license_plate = lpr.license_plate_recognize(roi)
 
-def static_process(video):
+def static_process(model, video):
     img = video.get_one_frame()
     img = Image.fromarray(img[..., ::-1])
 
-    yolo = Yolo4(["traffic light"])
-    bboxes, _ = yolo.detect_image(img)
+    model.set_detection_class(["traffic light"])
+    bboxes, _ = model.detect_image(img)
     return bboxes
 
 
@@ -65,9 +65,10 @@ def get_result(dataloader, save_dir):
     mkdir_if_missing(save_dir)
 
     # Static jobs: traffic light detection
-    traffic_lights_bboxes = static_process(dataloader)
+    yolo = Yolo4()
+    traffic_lights_bboxes = static_process(yolo, dataloader)
 
-    yolo = Yolo4(["person", "car"])
+    yolo.set_detection_class(["person", "car"])
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     tracker = Tracker(metric)
 

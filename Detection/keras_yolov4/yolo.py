@@ -65,15 +65,19 @@ class Yolo4:
                 len(self.class_names), self.input_image_shape,
                 score_threshold=self.score)
 
-    def __init__(self, target_class, gpu_num=1):
+    def __init__(self, gpu_num=1):
         self.score = score
         self.iou = iou
-        self.target_class =target_class
         self.anchors_path = anchors_path
         self.classes_path = classes_path
         self.model_path = model_path
         self.gpu_num = gpu_num
         self.load_yolo()
+
+        self.target_class = None
+
+    def set_detection_class(self, target_class):
+        self.target_class = target_class
 
     def close_session(self):
         self.sess.close()
