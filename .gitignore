@@ -132,3 +132,7 @@ dmypy.json
 
 Result/
 *.h5
+
+# Ignore pictures
+*.png
+*.jpg
