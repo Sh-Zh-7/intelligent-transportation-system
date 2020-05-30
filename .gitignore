@@ -136,3 +136,9 @@ Result/
 # Ignore pictures
 *.png
 *.jpg
+
+!0_left.png
+!1_right.png
+!2_straight.png
+!3_straight_left.png
+!4_straight_right.png
