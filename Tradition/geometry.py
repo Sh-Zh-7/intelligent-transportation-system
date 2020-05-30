@@ -10,30 +10,41 @@ class QuadPoints:
 
         top_points = sorted_point_list[:2]
         if top_points[0][0] < top_points[1][0]:
-            self.left_top = tuple(top_points[0])
-            self.right_top = tuple(top_points[1])
+            self.left_top = list(top_points[0])
+            self.right_top = list(top_points[1])
         else:
-            self.left_top = tuple(top_points[1])
-            self.right_top = tuple(top_points[0])
+            self.left_top = list(top_points[1])
+            self.right_top = list(top_points[0])
 
         bottom_points = sorted_point_list[2:]
         if bottom_points[0][0] < bottom_points[1][0]:
-            self.left_bottom = tuple(bottom_points[0])
-            self.right_bottom = tuple(bottom_points[1])
+            self.left_bottom = list(bottom_points[0])
+            self.right_bottom = list(bottom_points[1])
         else:
-            self.left_bottom = tuple(bottom_points[1])
-            self.right_bottom = tuple(bottom_points[0])
+            self.left_bottom = list(bottom_points[1])
+            self.right_bottom = list(bottom_points[0])
+
+        self.points_list = [self.left_top, self.left_bottom, self.right_top, self.right_bottom]
 
     def plot_on_images(self, img, color=(0, 255, 0), thickness=3):
-        cv2.line(img, self.left_top, self.right_top, color=color, thickness=thickness)
-        cv2.line(img, self.right_top, self.right_bottom, color=color, thickness=thickness)
-        cv2.line(img, self.right_bottom, self.left_bottom, color=color, thickness=thickness)
-        cv2.line(img, self.left_bottom, self.left_top, color=color, thickness=thickness)
+        cv2.line(img, tuple(self.left_top), tuple(self.right_top), color=color, thickness=thickness)
+        cv2.line(img, tuple(self.right_top), tuple(self.right_bottom), color=color, thickness=thickness)
+        cv2.line(img, tuple(self.right_bottom), tuple(self.left_bottom), color=color, thickness=thickness)
+        cv2.line(img, tuple(self.left_bottom), tuple(self.left_top), color=color, thickness=thickness)
 
     def get_center(self):
         line1 = Line([self.left_top, self.right_bottom], mode=LineMode.TWO_POINTS)
         line2 = Line([self.right_top, self.left_bottom], mode=LineMode.TWO_POINTS)
         return get_intersection(line1, line2)
+
+    def adjust_position(self, translate):
+        self.left_top[1] += translate
+        self.left_bottom[1] += translate
+        self.right_top[1] += translate
+        self.right_bottom[1] += translate
+        # for point in self.points_list:
+        #     point[0] += translate
+
 
 class LineMode:
     """
@@ -43,12 +54,14 @@ class LineMode:
     RECT = 1
     TWO_POINTS = 2
 
+
 class Line:
     """
     2D line's info, store by km
     """
     def __init__(self, info, mode):
         if mode == LineMode.POLAR:
+            # No need now
             pass
         elif mode == LineMode.RECT:
             self.k, self.m = info

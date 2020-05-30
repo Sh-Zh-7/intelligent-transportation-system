@@ -82,7 +82,7 @@ def cal_sim_sift(img1, img2):
     matches = flann.knnMatch(des1, des2, k=2)
     matchNum, matchesMask = getMatchNum(matches, 0.95)
     matchRatio = matchNum * 100 / len(matches)
-    print(matchRatio)
+    # print(matchRatio)
     return matchRatio
 
 
@@ -91,13 +91,13 @@ def cal_sim_contours(img1, img2):
     contours1 = cv2.findContours(img1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     contours2 = cv2.findContours(img2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     sim = cv2.matchShapes(contours1[0], contours2[0], cv2.CONTOURS_MATCH_I2, 0)
-    print(sim)
+    # print(sim)
     return sim
 
 
 def cal_sim_sse(img1, img2):
     img1 = np.array(Image.fromarray(img1).resize(reversed(img2.shape)))
     score = compare_mse(img1, img2)
-    print(score)
+    # print(score)
     return score
 

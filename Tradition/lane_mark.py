@@ -1,6 +1,18 @@
 import os
 from Tradition.utils import *
 
+class LaneMarkDirection:
+    LEFT = 0
+    RIGHT = 1
+    STRAIGHT = 2
+    STRAIGHT_LEFT = 3
+    STRAIGHT_RIGHT = 4
+
+
+def map_int_2_direction_str(num):
+    strs = ["left", "right", "straight", "straight_left", "straight_right"]
+    return strs[num]
+
 
 def get_standard_lane_marks(path):
     standard_lane_marks = []

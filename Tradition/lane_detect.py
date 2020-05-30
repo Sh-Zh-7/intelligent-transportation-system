@@ -1,11 +1,18 @@
 from Tradition.geometry import *
 from Tradition.lane_mark import *
 
+import warnings
+warnings.filterwarnings("ignore")
 
-if __name__ == '__main__':
-    standard_lane_marks = get_standard_lane_marks("./standard_lane_marks/")
 
-    src = cv2.imread("test.jpg")
+class Lane:
+    def __init__(self, boundary, category):
+        self.boundary = boundary
+        self.category = category
+
+
+def lane_detect(src):
+    ret_lanes = []
     height, width, _ = src.shape
 
     # Pre-processing
@@ -17,12 +24,6 @@ if __name__ == '__main__':
     # Morphology operation
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     dst = cv2.morphologyEx(roi_blur, cv2.MORPH_OPEN, kernel)
-    # Extract edges
-    x = cv2.Sobel(dst, cv2.CV_16S, 1, 0)
-    y = cv2.Sobel(dst, cv2.CV_16S, 0, 1)
-    absX = cv2.convertScaleAbs(x)
-    absY = cv2.convertScaleAbs(y)
-    edge = cv2.addWeighted(absX, 0.5, absY, 0.5, 0)
 
     # Fill the edges by draw a lot of lines
     zero_background = np.zeros((roi.shape[0], roi.shape[1], 3))
@@ -34,7 +35,6 @@ if __name__ == '__main__':
 
     # Separate zebra crossing and lane by using largest connect component
     mask = np.float32(mask)
-    gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     binary = cv2.threshold(mask, thresh=127, maxval=255, type=cv2.THRESH_BINARY)[1]
     result = largest_connect_component(binary)
     result = np.float32(result)
@@ -51,7 +51,6 @@ if __name__ == '__main__':
     _, contours, hierarchies = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     # Select areas that big enough
     target_contours = []
-    zero_background = np.zeros((roi.shape[0], roi.shape[1], 3))
     for contour, hierarchy in zip(contours, hierarchies[0]):
         if hierarchy[3] >= 0:
             target_contours.append(contour)
@@ -88,4 +87,25 @@ if __name__ == '__main__':
         perspective_matrix = cv2.getPerspectiveTransform(src, dst)
         perspective = cv2.warpPerspective(mark_roi, perspective_matrix, (400, 800), cv2.INTER_LINEAR)
 
-        print(recognize_lane_mark(perspective))
+        # Get Lane class object
+        lane_mark_category = recognize_lane_mark(perspective, standard_lane_marks)
+        translation = height - height // 2
+        quad_points.adjust_position(translation)
+        lane = Lane(quad_points, lane_mark_category)
+        ret_lanes.append(lane)
+
+    return ret_lanes
+
+
+if __name__ == '__main__':
+    standard_lane_marks = get_standard_lane_marks("./standard_lane_marks/")
+    img = cv2.imread("test.jpg")
+    lanes = lane_detect(img)
+    for lane in lanes:
+        lane.boundary.plot_on_images(img)
+        cv2.putText(img, map_int_2_direction_str(lane.category),
+                    lane.boundary.get_center(), cv2.FONT_HERSHEY_PLAIN,
+                    2, (0, 0, 255), 3)
+    show_img(img)
+
+
