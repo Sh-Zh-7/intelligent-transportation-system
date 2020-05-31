@@ -11,7 +11,7 @@ class Lane:
         self.category = category
 
 
-def lane_detect(src):
+def lane_detect(src, standard_lane_marks):
     ret_lanes = []
     height, width, _ = src.shape
 

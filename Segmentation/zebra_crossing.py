@@ -8,7 +8,7 @@ NCLASSES = 2
 HEIGHT, WIDTH = 416, 416
 
 model = mobilenet_segnet(n_classes=NCLASSES, input_height=HEIGHT, input_width=WIDTH)
-model.load_weights("./segnet_mobile/weights.h5")
+model.load_weights("./Segmentation/segnet_mobile/weights.h5")
 
 def get_zebra_crossing(img):
     origin_h, origin_w = img.shape[0], img.shape[1]
@@ -35,14 +35,15 @@ def get_zebra_area(mask):
     _, contours, hierarchy = cv2.findContours(mask, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
 
     target_box, max_area = None, None
+    target_rect = None
     for cnt in contours:
         rect = cv2.minAreaRect(cnt)
         area = rect[1][0] * rect[1][1]
         if max_area is None or area > max_area:
             max_area = area
             target_box = np.int0(cv2.boxPoints(rect))
-
-    return target_box
+            target_rect = rect
+    return target_box, target_rect
 
 
 if __name__ == '__main__':

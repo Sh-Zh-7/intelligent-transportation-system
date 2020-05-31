@@ -4,13 +4,13 @@ from sklearn.cluster import KMeans
 from skimage.measure import label, compare_mse
 from PIL import Image
 
-# create sift
-sift = cv2.xfeatures2d.SIFT_create()
-# create FLANN match template
-FLANN_INDEX_KDTREE = 0
-indexParams = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-searchParams = dict(checks=50)
-flann = cv2.FlannBasedMatcher(indexParams, searchParams)
+# # create sift
+# sift = cv2.xfeatures2d.SIFT_create()
+# # create FLANN match template
+# FLANN_INDEX_KDTREE = 0
+# indexParams = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+# searchParams = dict(checks=50)
+# flann = cv2.FlannBasedMatcher(indexParams, searchParams)
 
 def show_img(src):
     cv2.imshow("title", src)
@@ -74,16 +74,16 @@ def getMatchNum(matches, ratio):
     return matchNum, matchesMask
 
 
-def cal_sim_sift(img1, img2):
-    img1 = np.array(Image.fromarray(img1).resize(reversed(img2.shape)))
-    img1, img2 = np.uint8(img1), np.uint8(img2)
-    kp1, des1 = sift.detectAndCompute(img1, None)
-    kp2, des2 = sift.detectAndCompute(img2, None)
-    matches = flann.knnMatch(des1, des2, k=2)
-    matchNum, matchesMask = getMatchNum(matches, 0.95)
-    matchRatio = matchNum * 100 / len(matches)
-    # print(matchRatio)
-    return matchRatio
+# def cal_sim_sift(img1, img2):
+#     img1 = np.array(Image.fromarray(img1).resize(reversed(img2.shape)))
+#     img1, img2 = np.uint8(img1), np.uint8(img2)
+#     kp1, des1 = sift.detectAndCompute(img1, None)
+#     kp2, des2 = sift.detectAndCompute(img2, None)
+#     matches = flann.knnMatch(des1, des2, k=2)
+#     matchNum, matchesMask = getMatchNum(matches, 0.95)
+#     matchRatio = matchNum * 100 / len(matches)
+#     # print(matchRatio)
+#     return matchRatio
 
 
 def cal_sim_contours(img1, img2):
