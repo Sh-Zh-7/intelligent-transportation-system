@@ -1,8 +1,7 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import argparse
 import warnings
-warnings.filterwarnings("ignore")
+# warnings.filterwarnings("ignore")
 
 from Detection.keras_yolov4.yolo import Yolo4
 from Detection.traffic_light import get_traffic_light_color
@@ -21,7 +20,9 @@ result_root = "./Result"
 
 max_cosine_distance = 0.5
 nn_budget = None
-nms_max_overlap = 0.3
+nms_max_overlap = 0.45
+
+min_box_area = 2500
 
 # Store id and [license_content, confident]
 license_set = {}
@@ -30,7 +31,7 @@ global_ids = set()
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_video", type=str, default="./Videos/video-01.avi", help="position of your video")
+    parser.add_argument("--input_video", type=str, default="./Videos/video-03.avi", help="position of your video")
 
     args = parser.parse_args()
     return args
@@ -89,12 +90,11 @@ def get_result(dataloader, save_dir):
     yolo = Yolo4()
     traffic_lights_bboxes = static_process(yolo, dataloader)
 
-    yolo.set_detection_class(["person", "car", "motorbike"])
+    yolo.set_detection_class(["person", "car"])
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     tracker = Tracker(metric)
 
     timer = Timer()
-    results = []
     frame_id = 0
 
     model_filename = "./Tracking/DeepSort/model_data/market1501.pb"
@@ -129,18 +129,20 @@ def get_result(dataloader, save_dir):
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
-            # Set min box area, otherwise the lpr won't recognize it
-            online_ids.append(int(track.track_id))
-            online_classes.append(track.category)
-            online_tlwhs.append(tuple(track.to_tlwh()))
-
-            further_process(np.array(frame), int(track.track_id), track.category, tuple(track.to_tlwh()))
+            tlwh = track.to_tlwh()
+            # Avoid negative
+            tlwh[0], tlwh[1] = tlwh[0] if tlwh[0] > 0 else 0, tlwh[1] if tlwh[1] > 0 else 0
+            if tlwh[2] * tlwh[3] > min_box_area:
+                # Set min box area, otherwise the lpr won't recognize it
+                online_ids.append(int(track.track_id))
+                online_classes.append(track.category)
+                online_tlwhs.append(tuple(tlwh))
+                further_process(np.array(frame), int(track.track_id), track.category, tuple(tlwh))
         timer.toc()
 
         # -------------------------------------------PLOT----------------------------------------------------
         # Save tracking results
         # results.append((frame_id + 1, online_tlwhs, online_ids))
-        # 只能用整除，所以得用//
         frame = cv2.line(frame, (0, frame.shape[0] // 2), (frame.shape[1], frame.shape[0] // 2), color=(0, 0, 255), thickness=3)
         cv2.putText(frame, "Car counts: {}".format(global_count),
                     (frame.shape[1] // 2, frame.shape[0] // 2),
