@@ -8,7 +8,10 @@ def license_plate_recognize(car_img):
     """
     try:
         result = HyperLPR_plate_recognition(car_img)
-        return result[0][0], result[0][1]
+        if len(result[0][0]) == 7:
+            return result[0][0], result[0][1]
+        else:
+            return "Can't recognize", 0
     except:
         # Can't recognize
         # Include bbox's size is too small(0)
@@ -17,5 +20,8 @@ def license_plate_recognize(car_img):
 
 
 if __name__ == '__main__':
-    src = cv2.imread("test.jpg")
+    src = cv2.imread("./test2.png")
+    cv2.imshow("title", src)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     license_plate_recognize(src)
