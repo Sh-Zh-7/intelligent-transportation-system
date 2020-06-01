@@ -52,10 +52,40 @@ Some part of the code is borrowed from the following repo. Thanks for their wond
 # Citation
 
 ### YOLO v4:
+```
+@misc{bochkovskiy2020yolov4,
+    title={YOLOv4: Optimal Speed and Accuracy of Object Detection},
+    author={Alexey Bochkovskiy and Chien-Yao Wang and Hong-Yuan Mark Liao},
+    year={2020},
+    eprint={2004.10934},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
 
 ### SegNet:
+```
+@misc{badrinarayanan2015segnet,
+    title={SegNet: A Deep Convolutional Encoder-Decoder Architecture for Image Segmentation},
+    author={Vijay Badrinarayanan and Alex Kendall and Roberto Cipolla},
+    year={2015},
+    eprint={1511.00561},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
 
 ### MobileNet:
+```
+@misc{howard2017mobilenets,
+    title={MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications},
+    author={Andrew G. Howard and Menglong Zhu and Bo Chen and Dmitry Kalenichenko and Weijun Wang and Tobias Weyand and Marco Andreetto and Hartwig Adam},
+    year={2017},
+    eprint={1704.04861},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
 
 ### Deep_SORT :
 
