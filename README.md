@@ -18,7 +18,7 @@ CV integrated project
 
 # Basic jobs
 
-### Taffic light & zebra crossing & lane & lane mark
+## Taffic light & zebra crossing & lane & lane mark
 
 For those jobs, we require user to input static background image of the video, so we can get the environment’s information.
 
@@ -26,9 +26,9 @@ We use **object detection** and **semantic segmentation** method to get the posi
 
 As for the lane and lane mark, we choose to use **traditional cv** method, including connected domain, contour detection, flood fill and similarity calculation, .etc.
 
-<img src="./assets/static_jobs.png" height=150>
+<img src="./assets/static_jobs.png">
 
-### Car tracking & LPR & pedestrians detection
+## Car tracking & LPR & pedestrians detection
 
 After get the environment information about the videos, we can do further jobs that require time context information of the video.
 
