@@ -24,6 +24,7 @@ def static_process(args, model):
     img = cv2.imread(args.input_background)
 
     # Segment zebra crossing
+    # 这是一个List的list，内部的每一个List就是一个坐标
     zebra_rect = get_zebra_rect(img)
 
     # Get lane and lane mark
