@@ -15,7 +15,7 @@ def get_color(category):
 
 
 def plot_static_objects(image, traffic_lights_bbox, traffic_light_color):
-    color_str_tuple_map = {"green": (0, 255, 0), "red": (0, 0, 255), "yellow": (0, 255, 255)}
+    color_str_tuple_map = {"green": (0, 255, 0), "red": (0, 0, 255), "yellow": (0, 255, 255), "black": (0, 0, 0)}
     image = plot_rectangle(image, "traffic light", traffic_lights_bbox, color_str_tuple_map[traffic_light_color])
     return image
 

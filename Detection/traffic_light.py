@@ -53,7 +53,7 @@ def get_traffic_light_color(img):
     yellow_count = get_white_pixel_count(orange_mask + yellow_mask)
 
     # Decide colors
-    ret_color, max_count = None, 0
+    ret_color, max_count = "black", 0
     colors, counts = ("green", "red", "yellow"), (green_count, red_count, yellow_count)
     for color, count in zip(colors, counts):
         if count > max_count:

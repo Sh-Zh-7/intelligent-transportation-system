@@ -1,4 +1,5 @@
 import cv2
+from enum import Enum, unique
 
 class QuadPoints:
     """
@@ -45,8 +46,8 @@ class QuadPoints:
         # for point in self.points_list:
         #     point[0] += translate
 
-
-class LineMode:
+@unique
+class LineMode(Enum):
     """
     Define line's mode
     """

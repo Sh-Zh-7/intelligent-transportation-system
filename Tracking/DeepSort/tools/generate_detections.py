@@ -1,6 +1,5 @@
 # vim: expandtab:ts=4:sw=4
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import errno
 import argparse
 import numpy as np

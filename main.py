@@ -1,7 +1,7 @@
 import os
 import argparse
 import warnings
-# warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")
 
 from Detection.keras_yolov4.yolo import Yolo4
 from Detection.traffic_light import get_traffic_light_color
@@ -31,7 +31,8 @@ global_ids = set()
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_video", type=str, default="./Videos/video-03.avi", help="position of your video")
+    parser.add_argument("--input_video", type=str, default="./Videos/video-01.avi", help="position of your video")
+    parser.add_argument("--input_background", type=str, default="./Videos/background_1.png", help="position")
 
     args = parser.parse_args()
     return args
@@ -72,23 +73,22 @@ def further_process(img, obj_id, obj_category, obj_tlwh):
     get_traffic_statistic(img, obj_id, obj_category, obj_tlwh)
 
 
-def static_process(model, video):
-    img = video.get_one_frame()
-    img = Image.fromarray(img[..., ::-1])
+def static_process(args, model):
+    img = cv2.imread(args.input_background)
 
     model.set_detection_class(["traffic light"])
-    bboxes, _ = model.detect_image(img)
-    return bboxes
+    traffic_light_box, _ = model.detect_image(img)
+    return traffic_light_box
 
 
-def get_result(dataloader, save_dir):
+def get_result(args, dataloader, save_dir):
     global global_count
 
     mkdir_if_missing(save_dir)
 
     # --------------------------------------------Detection---------------------------------------------------
     yolo = Yolo4()
-    traffic_lights_bboxes = static_process(yolo, dataloader)
+    traffic_lights_bboxes = static_process(args, yolo)
 
     yolo.set_detection_class(["person", "car"])
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
@@ -132,6 +132,7 @@ def get_result(dataloader, save_dir):
             tlwh = track.to_tlwh()
             # Avoid negative
             tlwh[0], tlwh[1] = tlwh[0] if tlwh[0] > 0 else 0, tlwh[1] if tlwh[1] > 0 else 0
+            # Ignore too small object
             if tlwh[2] * tlwh[3] > min_box_area:
                 # Set min box area, otherwise the lpr won't recognize it
                 online_ids.append(int(track.track_id))
@@ -182,7 +183,7 @@ def main(args):
 
     # Split video by frames
     frame_dir = os.path.join(result_root, "frame")
-    get_result(dataloader, frame_dir)
+    get_result(args, dataloader, frame_dir)
 
     # Convert images to video
     output_video_path = os.path.join(result_root, "result.mp4")

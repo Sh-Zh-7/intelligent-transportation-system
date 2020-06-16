@@ -2,14 +2,13 @@ import colorsys
 import os
 
 import numpy as np
-from PIL import Image
 from keras import backend as K
 from keras.layers import Input
 
 from Detection.keras_yolov4.yolo4.model import yolo_eval, yolo4_body
 from Detection.keras_yolov4.yolo4.utils import letterbox_image
 
-score = 0.5
+score = 0.4
 iou = 0.5
 
 model_path = 'Detection/keras_yolov4/model_data/yolo4_weight.h5'
@@ -57,7 +56,7 @@ class Yolo4:
 
         print('{} model, anchors, and classes loaded.'.format(model_path))
 
-        if self.gpu_num>=2:
+        if self.gpu_num >= 2:
             self.yolo4_model = multi_gpu_model(self.yolo4_model, gpus=self.gpu_num)
 
         self.input_image_shape = K.placeholder(shape=(2, ))
@@ -65,7 +64,7 @@ class Yolo4:
                 len(self.class_names), self.input_image_shape,
                 score_threshold=self.score)
 
-    def __init__(self, gpu_num=1):
+    def __init__(self, score=0.4, gpu_num=1):
         self.score = score
         self.iou = iou
         self.anchors_path = anchors_path
@@ -121,21 +120,3 @@ class Yolo4:
             return_class_names.append(predicted_class)
 
         return return_boxs, return_class_names
-
-if __name__ == '__main__':
-    model_image_size = (608, 608)
-
-    yolo4_model = Yolo4(["traffic light"])
-
-    while True:
-        img = input('Input image filename:')
-        try:
-            image = Image.open(img)
-        except:
-            print('Open Error! Try again!')
-            continue
-        else:
-            result = yolo4_model.detect_image(image, model_image_size=model_image_size)
-            print(result)
-
-    yolo4_model.close_session()

@@ -8,7 +8,7 @@ NCLASSES = 2
 HEIGHT, WIDTH = 416, 416
 
 model = mobilenet_segnet(n_classes=NCLASSES, input_height=HEIGHT, input_width=WIDTH)
-model.load_weights("./Segmentation/segnet_mobile/weights.h5")
+model.load_weights("./segnet_mobile/weights.h5")
 
 def get_zebra_crossing(img):
     origin_h, origin_w = img.shape[0], img.shape[1]
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     src = cv2.imread("./test2.png")
     result = get_zebra_crossing(src)
     gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
-    target_box = get_zebra_area(gray)
+    target_box, _ = get_zebra_area(gray)
 
     cv2.drawContours(src, [target_box], 0, (0, 0, 255), 2)
     cv2.imshow("fuck", src)
