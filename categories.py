@@ -39,6 +39,13 @@ class MyQueue:
 
 class Bbox:
     def __init__(self, tlwh):
+        self.x1, self.y1, self.x2, self.y2 = None, None, None, None
+        self.w, self.h = None, None
+        self.center_x, self.center_y = None, None
+        self.center, self.center_numpy = None, None
+        self.update(tlwh)
+        
+    def update(self, tlwh):
         self.x1, self.y1, self.w, self.h = tlwh
         self.x2, self.y2 = self.x1 + self.w, self.y1 + self.h
         self.center_x = int(self.x1 + self.w / 2)
@@ -48,8 +55,7 @@ class Bbox:
     
 
 class Track:
-    def __init__(self, obj_id, category, tlwh, confidence, roi):
-        self.obj_id = obj_id
+    def __init__(self, category, tlwh, confidence, roi):
         self.category = category
         self.tlwh = tlwh
         self.confidence = confidence
@@ -61,8 +67,8 @@ class Track:
 
 
 class Car(Track):
-    def __init__(self, obj_id, tlwh, confidence, roi, lanes):
-        super().__init__(obj_id, "car", tlwh, confidence, roi)
+    def __init__(self, tlwh, roi, lanes, confidence):
+        super().__init__("car", tlwh, confidence, roi)
 
         self.license_plate = None
         self.license_confidence = 0
@@ -81,13 +87,14 @@ class Car(Track):
         self.drive_without_guidance = False
         self.run_the_red_light = False
 
-    def update(self):
+    def update(self, tlwh):
+        self.set_positions(tlwh)
         self.set_license()
-        self.set_is_moving()
-        self.set_moving_dir()
-        self.set_crossing_line()
-        self.set_run_the_red_light()
-        self.set_drive_without_guidance()
+        # self.set_is_moving()
+        # self.set_moving_dir()
+        # self.set_crossing_line()
+        # self.set_run_the_red_light()
+        # self.set_drive_without_guidance()
 
     def set_allow_direction(self, lanes):
         if self.allow_direction is None:
@@ -106,6 +113,11 @@ class Car(Track):
                         self.allow_direction = [CarDir.RIGHT, CarDir.FOREWORD]
                     break
 
+    def set_positions(self, tlwh):
+        self.bbox.update(tlwh)
+        self.history_center.push(self.bbox.center)
+        
+    
     def set_license(self):
         license_plate, license_confidence = lpr.license_plate_recognize(self.roi)
         if license_confidence > self.license_confidence:
@@ -158,13 +170,16 @@ class Car(Track):
 
     def set_drive_without_guidance(self):
         if self.allow_direction is not None:
-            self.drive_without_guidance = True if self.direction == self.allow_direction else False
+            self.drive_without_guidance = False if self.direction in self.allow_direction else True
 
 
 class Person(Track):
-    def __init__(self, obj_id, tlwh, confidence):
+    def __init__(self, tlwh, confidence):
         # The person object doesn't need roi
-        super().__init__(obj_id, "person", tlwh, confidence, None)
+        super().__init__("person", tlwh, confidence, None)
+
+    def update(self, tlwh):
+        self.bbox.update(tlwh)
 
 
 def is_point_in_quad(point, quad):
