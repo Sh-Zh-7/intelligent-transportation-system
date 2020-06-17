@@ -87,14 +87,14 @@ class Car(Track):
         self.drive_without_guidance = False
         self.run_the_red_light = False
 
-    def update(self, tlwh):
+    def update(self, tlwh, environment):
         self.set_positions(tlwh)
         self.set_license()
-        # self.set_is_moving()
-        # self.set_moving_dir()
-        # self.set_crossing_line()
-        # self.set_run_the_red_light()
-        # self.set_drive_without_guidance()
+        self.set_is_moving()
+        self.set_moving_dir()
+        self.set_crossing_line()
+        self.set_run_the_red_light(environment)
+        self.set_drive_without_guidance()
 
     def set_allow_direction(self, lanes):
         if self.allow_direction is None:
@@ -135,37 +135,43 @@ class Car(Track):
 
             # Moving to the Upper side
             if y1 > y2:
-                k = (float(y1) - float(y2)) / (float(x1) - float(x2))
-                if 0 <= k < 1:
-                    self.direction = CarDir.RIGHT
-                elif k >= 1 or k <= -1:
+                try:
+                    k = (float(y1) - float(y2)) / (float(x1) - float(x2))
+                    if 0 <= k < 1:
+                        self.direction = CarDir.RIGHT
+                    elif k >= 1 or k <= -1:
+                        self.direction = CarDir.FOREWORD
+                    elif -1 <= k < 0:
+                        self.direction = CarDir.LEFT
+                except ZeroDivisionError:
+                    # x1 == x2 and is still moving
                     self.direction = CarDir.FOREWORD
-                elif -1 <= k < 0:
-                    self.direction = CarDir.LEFT
 
     def set_crossing_line(self):
-        left_top, right_top = self.belong_lane.boundary.left_top, self.belong_lane.boundary.right_top
-        x1, y1 = left_top
-        x2, y2 = right_top
+        if self.belong_lane is not None:
+            left_top, right_top = self.belong_lane.boundary.left_top, self.belong_lane.boundary.right_top
+            x1, y1 = left_top
+            x2, y2 = right_top
 
-        k = (float(y2) - float(y1)) / (float(x2) - float(x1))
-        m = (float(x2) * float(y1) - float(x1) * float(y2)) / (float(x2) - float(x1))
+            k = (float(y2) - float(y1)) / (float(x2) - float(x1))
+            m = (float(x2) * float(y1) - float(x1) * float(y2)) / (float(x2) - float(x1))
 
-        self.is_crossing_line = (self.bbox.center_y < self.bbox.center_x * k + m) and (not self.is_moving)
+            self.is_crossing_line = (self.bbox.center_y < self.bbox.center_x * k + m) and (not self.is_moving)
 
-    def set_not_wait_for_person(self, person_list, crossing_rect):
+    def set_not_wait_for_person(self, tracker_db, person_id_list, crossing_rect):
         if cv2.rotatedRectangleIntersection(self.rect, crossing_rect)[0] == cv2.INTERSECT_NONE:
             self.not_wait_for_person = False
         else:
-            for person in person_list:
+            for person_id in person_id_list:
+                person = tracker_db[person_id]
                 if cv2.rotatedRectangleIntersection(person.rect, crossing_rect)[0] != cv2.INTERSECT_NONE:
                     self.not_wait_for_person = True
                     return
             self.not_wait_for_person = False
 
-    def set_run_the_red_light(self):
-        # Previously confirm the red light environment
-        self.run_the_red_light = True if self.is_moving and self.direction == CarDir.FOREWORD else False
+    def set_run_the_red_light(self, environment):
+        if environment == "red":
+            self.run_the_red_light = True if self.is_moving and self.direction == CarDir.FOREWORD else False
 
     def set_drive_without_guidance(self):
         if self.allow_direction is not None:
