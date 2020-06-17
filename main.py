@@ -61,12 +61,22 @@ def update_tracker(image, detection_model, tracker_model):
     tracker_model.update(detections)
 
 
+def get_environment(image, traffic_lights_bboxes):
+    for bbox in traffic_lights_bboxes:
+        image = np.array(image)
+        x, y, w, h = bbox[0], bbox[1], bbox[2], bbox[3]
+        roi = image[y:y + h, x:x + w, :]
+        color_str = get_traffic_light_color(roi)
+        color = color_str_tuple_map[color_str]
+        return color
+
+
 def get_result(args, dataloader, save_dir):
     global flow_count
     global cars_crossing_line
 
-    timer = Timer()
     frame_id = 0
+    timer = Timer()
     mkdir_if_missing(save_dir)
 
     # Using yolo and tradition cv to get background information
@@ -80,6 +90,7 @@ def get_result(args, dataloader, save_dir):
             print("Processing frame {} ({:.2f} fps)".format(frame_id, 1. / max(1e-5, timer.average_time)))
         timer.tic()
         update_tracker(frame, yolo, tracker)
+        traffic_light_color = get_environment(frame, traffic_lights_bboxes)
 
         # Store tracker result
         online_cars_ids = []
@@ -110,10 +121,15 @@ def get_result(args, dataloader, save_dir):
                         if upper <= frame.shape[0] // 2 <= lower:
                             flow_count += 1
                             cars_crossing_line.add(track.track_id)
+                    # Update car object with environment
+                    tracker_db[track.track_id].update(tlwh, traffic_light_color)
                 elif track.category == "person":
                     online_persons_ids.append(track.track_id)
-                # Update each track's information
-                tracker_db[track.track_id].update(tlwh)
+                    tracker_db[track.track_id].update(tlwh)
+        # After get all the car object and person object
+        # Detect whether a car not wait for peron
+        for car_id in online_cars_ids:
+            tracker_db[car_id].set_not_wait_for_person(tracker_db, online_persons_ids, zebra_rect)
         timer.toc()
 
         # Plot part
