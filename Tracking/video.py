@@ -36,9 +36,9 @@ class Video:
         # Read image
         res, frame = self.cap.read()  # BGR
         assert frame is not None, 'Failed to load frame {:d}'.format(self.count)
-        img0 = frame[:, :, ::-1].transpose(2, 0, 1)
+        # img0 = frame[:, :, ::-1].transpose(2, 0, 1)
 
-        return self.count, frame, img0
+        return frame
 
     def __len__(self):
         return self.vn

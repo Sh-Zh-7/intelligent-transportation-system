@@ -8,7 +8,7 @@ NCLASSES = 2
 HEIGHT, WIDTH = 416, 416
 
 model = mobilenet_segnet(n_classes=NCLASSES, input_height=HEIGHT, input_width=WIDTH)
-model.load_weights("./segnet_mobile/weights.h5")
+model.load_weights("./Segmentation/segnet_mobile/weights.h5")
 
 def get_zebra_crossing(img):
     origin_h, origin_w = img.shape[0], img.shape[1]
