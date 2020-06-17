@@ -1,4 +1,5 @@
-from Tracking.visualize import *
+import cv2
+from PIL import Image
 
 from Segmentation.zebra_crossing import get_zebra_crossing, get_zebra_area
 from Tradition.lane_detect import lane_detect, get_standard_lane_marks
