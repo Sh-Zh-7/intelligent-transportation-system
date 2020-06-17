@@ -42,6 +42,14 @@ def plot_flow_statistics(image, car_count):
 
 
 def plot_cars_rect(image, cars_id, tracker_db, color=(0, 255, 255)):
+    """
+    Plot car bbox in one frame
+    :param image: origin images
+    :param cars_id: id of cars
+    :param tracker_db: tracker's data base
+    :param color: color of car's bbox
+    :return: plotted image
+    """
     # Set font type and thickness
     image = Image.fromarray(image.copy())
     font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
@@ -71,6 +79,14 @@ def plot_cars_rect(image, cars_id, tracker_db, color=(0, 255, 255)):
 
 
 def plot_persons_rect(image, persons_id, tracker_db, color=(255, 0, 0)):
+    """
+    Plot person rect in one frame
+    :param image: origin images
+    :param persons_id: id of person
+    :param tracker_db: tracker's data base
+    :param color: color of person's bbox
+    :return: plotted images
+    """
     # Set font type and thickness
     image = Image.fromarray(image.copy())
     font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
@@ -99,6 +115,12 @@ def plot_persons_rect(image, persons_id, tracker_db, color=(255, 0, 0)):
 
 
 def plot_traffic_bboxes(image, traffic_lights_bboxes):
+    """
+    Plot traffic light in one frame
+    :param image: origin images
+    :param traffic_lights_bboxes: traffic lights' bboxes
+    :return: plotted images
+    """
     image = Image.fromarray(image.copy())
     font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))

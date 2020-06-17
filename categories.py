@@ -116,8 +116,7 @@ class Car(Track):
     def set_positions(self, tlwh):
         self.bbox.update(tlwh)
         self.history_center.push(self.bbox.center)
-        
-    
+
     def set_license(self):
         license_plate, license_confidence = lpr.license_plate_recognize(self.roi)
         if license_confidence > self.license_confidence:
