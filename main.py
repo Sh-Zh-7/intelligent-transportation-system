@@ -78,6 +78,7 @@ def get_result(args, dataloader, save_dir):
     frame_id = 0
     timer = Timer()
     mkdir_if_missing(save_dir)
+    all_car_info = ""
 
     # Using yolo and tradition cv to get background information
     yolo = Yolo4()
@@ -108,9 +109,9 @@ def get_result(args, dataloader, save_dir):
                     if track.category == "car":
                         roi = np.array(frame)[int(tlwh[1]): int(tlwh[1] + tlwh[3]), 
                               int(tlwh[0]):int(tlwh[0] + tlwh[2]), :]
-                        tracker_db[track.track_id] = Car(tlwh, roi, lanes, confidence=0)
+                        tracker_db[track.track_id] = Car(track.track_id, tlwh, roi, lanes, confidence=0)
                     else:
-                        tracker_db[track.track_id] = Person(tlwh, confidence=0)
+                        tracker_db[track.track_id] = Person(track.track_id, tlwh, confidence=0)
                 # Get all tracks in this frame, will be used in plotting
                 if track.category == "car":
                     online_cars_ids.append(track.track_id)
@@ -130,11 +131,11 @@ def get_result(args, dataloader, save_dir):
         # Detect whether a car not wait for peron
         for car_id in online_cars_ids:
             tracker_db[car_id].set_not_wait_for_person(tracker_db, online_persons_ids, zebra_rect)
+            # Saving tracking results, for UI information
+            all_car_info += (str(frame_id) + "," + str(tracker_db[car_id]))
         timer.toc()
 
         # Plot part
-        # # Save tracking results, for UI information
-        # results.append((frame_id + 1, online_tlwhs, online_ids))
         online_im = plot_video_info(np.array(frame), frame_id=frame_id, fps=1. / timer.average_time)
         online_im = plot_flow_statistics(online_im, flow_count)
         online_im = plot_cars_rect(online_im, online_cars_ids, tracker_db)
@@ -144,8 +145,9 @@ def get_result(args, dataloader, save_dir):
         # Save plot images
         cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
         frame_id += 1
-    # # save results, for UI information
-    # write_results(result_filename, results, data_type)
+    # Dump it into .txt file
+    with open(os.path.join(args.output_dir, "result.txt"), "w") as f:
+        f.write(all_car_info)
     return frame_id, timer.average_time, timer.calls
 
 

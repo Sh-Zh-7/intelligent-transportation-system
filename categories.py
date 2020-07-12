@@ -55,7 +55,8 @@ class Bbox:
     
 
 class Track:
-    def __init__(self, category, tlwh, confidence, roi):
+    def __init__(self, track_id, category, tlwh, confidence, roi):
+        self.id = track_id
         self.category = category
         self.tlwh = tlwh
         self.confidence = confidence
@@ -67,8 +68,8 @@ class Track:
 
 
 class Car(Track):
-    def __init__(self, tlwh, roi, lanes, confidence):
-        super().__init__("car", tlwh, confidence, roi)
+    def __init__(self, car_id, tlwh, roi, lanes, confidence):
+        super().__init__(car_id, "car", tlwh, confidence, roi)
 
         self.license_plate = None
         self.license_confidence = 0
@@ -86,6 +87,15 @@ class Car(Track):
         self.not_wait_for_person = False
         self.drive_without_guidance = False
         self.run_the_red_light = False
+
+    def __str__(self):
+        output_license_plate_content = self.license_plate if self.license_plate else "None"
+        return \
+    str(self.id) + "," + \
+    str(self.bbox.x1) + "," + str(self.bbox.y1) + "," + str(self.bbox.w) + "," + str(self.bbox.h) + "," + \
+    output_license_plate_content + "," + str(self.license_confidence) + "," + \
+    str(int(self.is_crossing_line)) + "," + str(int(self.not_wait_for_person)) + "," + \
+    str(int(self.drive_without_guidance)) + "," + str(int(self.run_the_red_light)) + "\n"
 
     def update(self, tlwh, environment):
         self.set_positions(tlwh)
@@ -179,9 +189,9 @@ class Car(Track):
 
 
 class Person(Track):
-    def __init__(self, tlwh, confidence):
+    def __init__(self, person_id, tlwh, confidence):
         # The person object doesn't need roi
-        super().__init__("person", tlwh, confidence, None)
+        super().__init__(person_id, "person", tlwh, confidence, None)
 
     def update(self, tlwh):
         self.bbox.update(tlwh)
