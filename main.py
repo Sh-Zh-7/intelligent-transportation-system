@@ -1,6 +1,8 @@
 import argparse
 import warnings
 
+from Segmentation.segnet_mobile.segnet import mobilenet_segnet
+from Segmentation.zebra_crossing import WIDTH, HEIGHT, NCLASSES
 from background import static_process
 from categories import Car, Person
 
@@ -23,10 +25,7 @@ nms_max_overlap = 0.45
 min_box_area = 2500
 
 # Track model settings
-metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-tracker = Tracker(metric)
-model_filename = "./Tracking/DeepSort/model_data/market1501.pb"
-encoder = gdet.create_box_encoder(model_filename, batch_size=1)
+
 
 # Global variables
 flow_count = 0
@@ -44,7 +43,22 @@ def get_args():
     return args
 
 
-def update_tracker(image, detection_model, tracker_model):
+def load_models():
+    # YOLO v4
+    yolo = Yolo4()
+    # Deep sort
+    metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
+    tracker = Tracker(metric)
+    model_filename = "./Tracking/DeepSort/model_data/market1501.pb"
+    encoder = gdet.create_box_encoder(model_filename, batch_size=1)
+    # Mobile net and segnet
+    ms_model = mobilenet_segnet(n_classes=NCLASSES, input_height=HEIGHT, input_width=WIDTH)
+    ms_model.load_weights("./Segmentation/segnet_mobile/weights.h5")
+
+    return yolo, tracker, encoder, ms_model
+
+
+def update_tracker(image, detection_model, encoder, tracker_model):
     # Start object detection
     img = Image.fromarray(image[..., ::-1])
     boxs, class_names = detection_model.detect_image(img)
@@ -81,8 +95,8 @@ def get_result(args, dataloader, save_dir):
     all_car_info = ""
 
     # Using yolo and tradition cv to get background information
-    yolo = Yolo4()
-    zebra_rect, lanes, traffic_lights_bboxes = static_process(args, yolo)
+    yolo, tracker, encoder, ms_model = load_models()
+    zebra_rect, lanes, traffic_lights_bboxes = static_process(args, yolo, ms_model)
 
     # Start tracking
     yolo.set_detection_class(["person", "car"])
@@ -90,7 +104,7 @@ def get_result(args, dataloader, save_dir):
         if frame_id % 20 == 0:
             print("Processing frame {} ({:.2f} fps)".format(frame_id, 1. / max(1e-5, timer.average_time)))
         timer.tic()
-        update_tracker(frame, yolo, tracker)
+        update_tracker(frame, yolo, encoder, tracker)
         traffic_light_color = get_environment(frame, traffic_lights_bboxes)
 
         # Store tracker result

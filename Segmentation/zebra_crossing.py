@@ -7,10 +7,7 @@ class_colors = [[0, 0, 0], [255, 255, 255]]
 NCLASSES = 2
 HEIGHT, WIDTH = 416, 416
 
-model = mobilenet_segnet(n_classes=NCLASSES, input_height=HEIGHT, input_width=WIDTH)
-model.load_weights("./Segmentation/segnet_mobile/weights.h5")
-
-def get_zebra_crossing(img):
+def get_zebra_crossing(img, model):
     origin_h, origin_w = img.shape[0], img.shape[1]
     img_arr = Image.fromarray(img).resize((WIDTH, HEIGHT))
     img = np.array(img_arr) / 255
