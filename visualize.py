@@ -96,8 +96,6 @@ def plot_cars_rect(image, cars_id, tracker_db, color=(0, 0, 255), font_color=(25
 
     return np.array(image)
 
-def plot_cars
-
 
 def plot_persons_rect(image, persons_id, tracker_db, color=(255, 0, 0)):
     """

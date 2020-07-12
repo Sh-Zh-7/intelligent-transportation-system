@@ -141,7 +141,15 @@ def get_result(args, models, dataloader, save_dir):
                     # Update car object with environment
                     tracker_db[track.track_id].update(tlwh, traffic_light_color)
                     # Update cars center set to plot motion path
+                    # We cannot iterate the queue, so we just draw the line here
                     pts[track.track_id].append(tracker_db[track.track_id].bbox.center)
+                    for j in range(1, len(pts[track.track_id])):
+                        if pts[track.track_id][j - 1] is None or pts[track.track_id][j] is None\
+                                or pts[track.track_id][j - 1] == pts[track.track_id][j]:
+                            continue
+                        thickness = int(np.sqrt(64 / float(j + 1)) * 2)
+                        cv2.line(frame, tuple(pts[track.track_id][j - 1]), tuple(pts[track.track_id][j])
+                                 , (0, 0, 255), thickness)
                 elif track.category == "person":
                     online_persons_ids.append(track.track_id)
                     tracker_db[track.track_id].update(tlwh)
@@ -157,7 +165,6 @@ def get_result(args, models, dataloader, save_dir):
         online_im = plot_video_info(np.array(frame), frame_id=frame_id, fps=1. / timer.average_time)
         online_im = plot_flow_statistics(online_im, flow_count)
         online_im = plot_cars_rect(online_im, online_cars_ids, tracker_db)
-        online_im = plot_cars_motion(online_im, pts)
         online_im = plot_persons_rect(online_im, online_persons_ids, tracker_db)
         online_im = plot_traffic_bboxes(online_im, traffic_lights_bboxes)
 

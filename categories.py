@@ -91,7 +91,7 @@ class Car(Track):
     def __str__(self):
         output_license_plate_content = self.license_plate if self.license_plate else "None"
         return \
-    str(self.id) + "," + \
+    str(self.id) + "," + str(self.confidence) + "," + \
     str(self.bbox.x1) + "," + str(self.bbox.y1) + "," + str(self.bbox.w) + "," + str(self.bbox.h) + "," + \
     output_license_plate_content + "," + str(self.license_confidence) + "," + \
     str(int(self.is_crossing_line)) + "," + str(int(self.not_wait_for_person)) + "," + \
