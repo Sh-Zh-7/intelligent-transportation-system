@@ -99,6 +99,7 @@ class Yolo4:
                 K.learning_phase(): 0
             })
 
+        score = 0
         for i, c in reversed(list(enumerate(out_classes))):
             predicted_class = self.class_names[c]
             if predicted_class not in self.target_class:
@@ -119,4 +120,4 @@ class Yolo4:
             return_boxs.append([x, y, w, h])
             return_class_names.append(predicted_class)
 
-        return return_boxs, return_class_names
+        return return_boxs, return_class_names, score

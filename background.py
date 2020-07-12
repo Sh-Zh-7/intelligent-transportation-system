@@ -29,7 +29,7 @@ def get_traffic_light(img, model):
     """
     img = Image.fromarray(img[..., ::-1])
     model.set_detection_class(["traffic light"])
-    traffic_light_boxes, _ = model.detect_image(img)
+    traffic_light_boxes, _, __ = model.detect_image(img)
     return traffic_light_boxes
 
 

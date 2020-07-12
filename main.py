@@ -85,9 +85,12 @@ def get_environment(image, traffic_lights_bboxes):
         return color
 
 
-def get_result(args, dataloader, save_dir):
+def get_result(args, models, dataloader, save_dir):
     global flow_count
     global cars_crossing_line
+
+    # Unpacking the models
+    yolo, tracker, encoder, ms_model = models
 
     frame_id = 0
     timer = Timer()
@@ -95,7 +98,6 @@ def get_result(args, dataloader, save_dir):
     all_car_info = ""
 
     # Using yolo and tradition cv to get background information
-    yolo, tracker, encoder, ms_model = load_models()
     zebra_rect, lanes, traffic_lights_bboxes = static_process(args, yolo, ms_model)
 
     # Start tracking
@@ -174,9 +176,12 @@ def main(args):
     logging.info("Start tracking...")
     dataloader = video.Video(args.input_video)
 
+    # Load models
+    models = load_models()
+
     # Split video by frames
     frame_dir = os.path.join(result_root, "frame")
-    get_result(args, dataloader, frame_dir)
+    get_result(args, models, dataloader, frame_dir)
 
     # Convert images to video
     output_video_path = os.path.join(result_root, "result.mp4")
