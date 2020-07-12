@@ -1,23 +1,29 @@
+# Python standard lib
 import argparse
+import json
+import subprocess
 import warnings
 from collections import deque
 
-from Segmentation.segnet_mobile.segnet import mobilenet_segnet
-from Segmentation.zebra_crossing import WIDTH, HEIGHT, NCLASSES
-from background import static_process
-from categories import Car, Person
-
 warnings.filterwarnings("ignore")
 
+# Detection import
 from Detection.keras_yolov4.yolo import Yolo4
+# Tracking import
 import Tracking.video as video
 from Tracking.DeepSort.deep_sort import preprocessing, nn_matching
 from Tracking.DeepSort.deep_sort.detection import Detection
 from Tracking.DeepSort.deep_sort.tracker import Tracker
 from Tracking.DeepSort.tools import generate_detections as gdet
 from Tracking.utils import *
+# Segmentation import
+from Segmentation.segnet_mobile.segnet import mobilenet_segnet
+from Segmentation.zebra_crossing import WIDTH, HEIGHT, NCLASSES
 
+# Utils
 from visualize import *
+from background import static_process
+from categories import Car, Person
 
 # Hyper parameters for tracking
 max_cosine_distance = 0.5
@@ -57,6 +63,13 @@ def load_models():
 
     return yolo, tracker, encoder, ms_model
 
+def get_video_fps(video_path):
+    command = "ffprobe  -v error -select_streams v -show_entries stream=r_frame_rate -of json {}".format(video_path)
+    value = subprocess.check_output(command)
+    data = json.loads(value)
+    frame_rate = eval(data.get('streams')[0].get('r_frame_rate'))
+    return frame_rate
+
 
 def update_tracker(image, detection_model, encoder, tracker_model):
     # Start object detection
@@ -85,10 +98,14 @@ def get_environment(image, traffic_lights_bboxes):
         return color
 
 
-def get_result(args, models, dataloader, save_dir):
+def get_result(video_path, image_path, output_dir, models):
     global flow_count
     global cars_crossing_line
 
+    # Load video
+    dataloader = video.Video(video_path)
+    save_dir = os.path.join(output_dir, "frame")
+    
     # Unpacking the models
     yolo, tracker, encoder, ms_model = models
 
@@ -98,7 +115,7 @@ def get_result(args, models, dataloader, save_dir):
     all_car_info = ""
 
     # Using yolo and tradition cv to get background information
-    zebra_rect, lanes, traffic_lights_bboxes = static_process(args, yolo, ms_model)
+    zebra_rect, lanes, traffic_lights_bboxes = static_process(image_path, yolo, ms_model)
 
     # Start tracking
     yolo.set_detection_class(["person", "car"])
@@ -148,8 +165,8 @@ def get_result(args, models, dataloader, save_dir):
                                 or pts[track.track_id][j - 1] == pts[track.track_id][j]:
                             continue
                         thickness = int(np.sqrt(64 / float(j + 1)) * 2)
-                        cv2.line(frame, tuple(pts[track.track_id][j - 1]), tuple(pts[track.track_id][j])
-                                 , (0, 0, 255), thickness)
+                        cv2.line(frame, tuple(pts[track.track_id][j - 1]), tuple(pts[track.track_id][j]),
+                                 (0, 0, 255), thickness)
                 elif track.category == "person":
                     online_persons_ids.append(track.track_id)
                     tracker_db[track.track_id].update(tlwh)
@@ -172,7 +189,7 @@ def get_result(args, models, dataloader, save_dir):
         cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
         frame_id += 1
     # Dump it into .txt file
-    with open(os.path.join(args.output_dir, "result.txt"), "w") as f:
+    with open(os.path.join(output_dir, "result.txt"), "w") as f:
         f.write(all_car_info)
     return frame_id, timer.average_time, timer.calls
 
@@ -182,16 +199,15 @@ def main(args):
     result_root = args.output_dir
     mkdir_if_missing(result_root)
 
-    # Get Video class and frame_rate
-    logging.info("Start tracking...")
-    dataloader = video.Video(args.input_video)
-
     # Load models
     models = load_models()
 
-    # Split video by frames
-    frame_dir = os.path.join(result_root, "frame")
-    get_result(args, models, dataloader, frame_dir)
+    # Get Video class and frame_rate
+    video_path = args.input_video
+    image_path = args.input_background
+    output_dir = args.output_dir
+    # Get result
+    get_result(video_path, image_path, output_dir, models)
 
     # Convert images to video
     output_video_path = os.path.join(result_root, "result.mp4")

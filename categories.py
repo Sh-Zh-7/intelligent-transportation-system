@@ -1,3 +1,5 @@
+import math
+
 import cv2
 from enum import Enum, unique
 
@@ -78,7 +80,7 @@ class Car(Track):
         self.allow_direction = None
         self.set_allow_direction(lanes)
 
-        # self.speed = 0    # TODO
+        self.speed = 0
         self.is_moving = False
         self.direction = CarDir.STOP
         self.history_center = MyQueue(max_size=10)
@@ -186,6 +188,12 @@ class Car(Track):
     def set_drive_without_guidance(self):
         if self.allow_direction is not None:
             self.drive_without_guidance = False if self.direction in self.allow_direction else True
+
+    def set_speed(self):
+        ppm = 8.8   # Pixels per meter
+        new_center, old_center = self.history_center.get_2_elements()
+        pixels = math.sqrt(math.pow(new_center[0] - old_center[0], 2) + math.pow(new_center[1] - new_center[1], 2))
+        self.speed = pixels / ppm * fps * 3.6
 
 
 class Person(Track):

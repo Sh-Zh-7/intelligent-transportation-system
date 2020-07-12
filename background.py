@@ -33,15 +33,15 @@ def get_traffic_light(img, model):
     return traffic_light_boxes
 
 
-def static_process(args, object_detection_model, segmentation_model):
+def static_process(image_path, object_detection_model, segmentation_model):
     """
     Using model and tradition cv method to get background information
+    :param image_path
     :param segmentation_model
     :param object_detection_model
-    :param args: necessary argument that user assigned
     :return: zebra, lanes and traffic light information
     """
-    img = cv2.imread(args.input_background)
+    img = cv2.imread(image_path)
 
     # Segment zebra crossing
     zebra_rect = get_zebra_rect(img, segmentation_model)
