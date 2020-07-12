@@ -56,7 +56,7 @@ def get_video_fps(video_path):
     return frame_rate
 
 
-def get_result(video_path, image_path, output_dir, models):
+def get_result(video_path, image_path, output_dir, models, fps):
     # Output directory
     result_root = output_dir
     mkdir_if_missing(result_root)
@@ -87,8 +87,11 @@ def get_result(video_path, image_path, output_dir, models):
         online_cars_ids = []
         online_persons_ids = []
 
-        frame_id, all_car_info = process_frame(frame, tracker, lanes, traffic_light_color, online_cars_ids,
-                                     online_persons_ids, zebra_rect, traffic_lights_bboxes, frame_id, timer, save_dir)
+        frame_id, all_car_info = process_frame(
+            frame, tracker, lanes,
+            traffic_light_color, online_cars_ids,
+            online_persons_ids, zebra_rect, traffic_lights_bboxes,
+            frame_id, timer, save_dir, fps)
         # Add your code here...
         print(frame_id)
 
@@ -115,5 +118,5 @@ if __name__ == '__main__':
     output_dir = args.output_dir
     # Get result
     fps = get_video_fps(video_path)
-    get_result(video_path, image_path, output_dir, models)
+    get_result(video_path, image_path, output_dir, models, fps)
     

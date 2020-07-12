@@ -97,12 +97,13 @@ class Car(Track):
     str(self.bbox.x1) + "," + str(self.bbox.y1) + "," + str(self.bbox.w) + "," + str(self.bbox.h) + "," + \
     output_license_plate_content + "," + str(self.license_confidence) + "," + \
     str(int(self.is_crossing_line)) + "," + str(int(self.not_wait_for_person)) + "," + \
-    str(int(self.drive_without_guidance)) + "," + str(int(self.run_the_red_light)) + "\n"
+    str(int(self.drive_without_guidance)) + "," + str(int(self.run_the_red_light)) + "," + str(self.speed) + "\n"
 
-    def update(self, tlwh, environment):
+    def update(self, tlwh, environment, fps):
         self.set_positions(tlwh)
         self.set_license()
         self.set_is_moving()
+        self.set_speed(fps)
         self.set_moving_dir()
         self.set_crossing_line()
         self.set_run_the_red_light(environment)
@@ -189,7 +190,7 @@ class Car(Track):
         if self.allow_direction is not None:
             self.drive_without_guidance = False if self.direction in self.allow_direction else True
 
-    def set_speed(self):
+    def set_speed(self, fps):
         ppm = 8.8   # Pixels per meter
         new_center, old_center = self.history_center.get_2_elements()
         pixels = math.sqrt(math.pow(new_center[0] - old_center[0], 2) + math.pow(new_center[1] - new_center[1], 2))

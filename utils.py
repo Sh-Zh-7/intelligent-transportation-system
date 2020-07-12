@@ -62,7 +62,8 @@ def process_frame(
         traffic_lights_bboxes,
         frame_id,
         timer,
-        save_dir
+        save_dir,
+        fps
 ):
     global flow_count
     global cars_crossing_line
@@ -95,7 +96,7 @@ def process_frame(
                         flow_count += 1
                         cars_crossing_line.add(track.track_id)
                 # Update car object with environment
-                tracker_db[track.track_id].update(tlwh, traffic_light_color)
+                tracker_db[track.track_id].update(tlwh, traffic_light_color, fps=fps)
                 # Update cars center set to plot motion path
                 # We cannot iterate the queue, so we just draw the line here
                 pts[track.track_id].append(tracker_db[track.track_id].bbox.center)
