@@ -43,19 +43,3 @@ def get_zebra_area(mask):
     return target_box, target_rect
 
 
-if __name__ == '__main__':
-    src = cv2.imread("./test2.png")
-    result = get_zebra_crossing(src)
-    gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
-    target_box, _ = get_zebra_area(gray)
-
-    cv2.drawContours(src, [target_box], 0, (0, 0, 255), 2)
-    cv2.imshow("fuck", src)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    # result = Image.blend(Image.fromarray(src), Image.fromarray(result), 0.3)
-    # cv2.imshow("title", np.array(result))
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
