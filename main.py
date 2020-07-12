@@ -1,6 +1,5 @@
 # Python standard lib
 import json
-import subprocess
 import warnings
 from collections import deque
 
@@ -50,8 +49,8 @@ def load_models():
 
 
 def get_video_fps(video_path):
-    command = "ffprobe  -v error -select_streams v -show_entries stream=r_frame_rate -of json {}".format(video_path)
-    value = subprocess.check_output(command)
+    command = "ffprobe -v error -select_streams v -show_entries stream=r_frame_rate -of json {}".format(video_path)
+    value = os.popen(command).read()
     data = json.loads(value)
     frame_rate = eval(data.get('streams')[0].get('r_frame_rate'))
     return frame_rate
@@ -115,6 +114,6 @@ if __name__ == '__main__':
     image_path = args.input_background
     output_dir = args.output_dir
     # Get result
-    # fps = get_video_fps(video_path)
+    fps = get_video_fps(video_path)
     get_result(video_path, image_path, output_dir, models)
     
