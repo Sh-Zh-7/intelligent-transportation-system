@@ -5,6 +5,10 @@ from Detection.traffic_light import get_traffic_light_color
 
 color_str_tuple_map = {"green": (0, 255, 0), "red": (0, 0, 255), "yellow": (0, 255, 255), "black": (0, 0, 0)}
 
+# Global variable
+thickness = 5
+stroke_width = 1
+
 def plot_video_info(image, frame_id, fps):
     """
     Plot video output information on each frames
@@ -41,9 +45,10 @@ def plot_flow_statistics(image, car_count):
     return image
 
 
-def plot_cars_rect(image, cars_id, tracker_db, color=(0, 255, 255)):
+def plot_cars_rect(image, cars_id, tracker_db, color=(0, 0, 255), font_color=(255, 255, 255)):
     """
     Plot car bbox in one frame
+    :param font_color
     :param image: origin images
     :param cars_id: id of cars
     :param tracker_db: tracker's data base
@@ -54,28 +59,44 @@ def plot_cars_rect(image, cars_id, tracker_db, color=(0, 255, 255)):
     image = Image.fromarray(image.copy())
     font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-    thickness = 2
     for car_id in cars_id:
         car = tracker_db[car_id]
+
+        # Decide text's content
         if car.license_confidence != 0:
-            label = "{}".format(car.license_plate)
+            label_left = "{}".format(car.license_plate)
         else:
-            label = "{}".format("car")
+            label_left = "{}".format("car")
+        label_right = str(round(car.confidence, 2))
+        # Decide text's size
         draw = ImageDraw.Draw(image)
-        label_size = draw.textsize(label, font)
-
-        if car.bbox.x1 - label_size[1] >= 0:
-            text_origin = np.array([car.bbox.x1, car.bbox.y1 - label_size[1]])
+        left_label_size = draw.textsize(label_left, font)
+        right_label_size = draw.textsize(label_right, font)
+        # Decide text's position
+        if car.bbox.x1 - left_label_size[1] >= 0:
+            text_origin_left = np.array([car.bbox.x1, car.bbox.y1 - left_label_size[1]])
         else:
-            text_origin = np.array([car.bbox.x1, car.bbox.y1 + 1])
+            text_origin_left = np.array([car.bbox.x1, car.bbox.y1 + 1])
+        if car.bbox.x1 + car.bbox.w - right_label_size[1] >= 0:
+            text_origin_right = np.array([car.bbox.x1 + car.bbox.w - right_label_size[0], car.bbox.y1 - left_label_size[1]])
+        else:
+            text_origin_right = np.array([car.bbox.x1 + car.bbox.w - right_label_size[0], car.bbox.y1 + 1])
+        # Draw the text
+        draw.rectangle([tuple(text_origin_left), tuple(text_origin_left + left_label_size)], fill=color)
+        draw.text(text_origin_left, label_left, fill=font_color, font=font, stroke_width=stroke_width)
+        # Pretty print
+        if text_origin_left[0] + left_label_size[0] < text_origin_right[0]:
+            draw.rectangle([tuple(text_origin_right), tuple(text_origin_right + right_label_size)], fill=color)
+            draw.text(text_origin_right, label_right, fill=font_color, font=font, stroke_width=stroke_width)
 
+        # Draw the bbox rectangle
         for i in range(thickness):
             draw.rectangle([car.bbox.x1 + i, car.bbox.y1 + i, car.bbox.x2 - i, car.bbox.y2 - i], outline=color)
-        draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=color)
-        draw.text(text_origin, label, fill=(0, 0, 0), font=font)
         del draw
 
     return np.array(image)
+
+def plot_cars
 
 
 def plot_persons_rect(image, persons_id, tracker_db, color=(255, 0, 0)):
@@ -91,7 +112,6 @@ def plot_persons_rect(image, persons_id, tracker_db, color=(255, 0, 0)):
     image = Image.fromarray(image.copy())
     font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-    thickness = 2
 
     for person_id in persons_id:
         person = tracker_db[person_id]
@@ -108,7 +128,7 @@ def plot_persons_rect(image, persons_id, tracker_db, color=(255, 0, 0)):
         for i in range(thickness):
             draw.rectangle([person.bbox.x1 + i, person.bbox.y1 + i, person.bbox.x2 - i, person.bbox.y2 - i], outline=color)
         draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=color)
-        draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+        draw.text(text_origin, label, fill=(0, 0, 0), font=font, stroke_width=stroke_width)
         del draw
 
     return np.array(image)
@@ -124,7 +144,6 @@ def plot_traffic_bboxes(image, traffic_lights_bboxes):
     image = Image.fromarray(image.copy())
     font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-    thickness = 2
     # Traffic light result
     for bbox in traffic_lights_bboxes:
         image = np.array(image)
@@ -151,7 +170,7 @@ def plot_traffic_bboxes(image, traffic_lights_bboxes):
         for i in range(thickness):
             draw.rectangle([left + i, top + i, right - i, buttom - i], outline=color)
         draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=color)
-        draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+        draw.text(text_origin, label, fill=(0, 0, 0), font=font, stroke_width=stroke_width)
         del draw
     return np.array(image)
 

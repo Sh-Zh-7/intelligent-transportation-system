@@ -1,5 +1,6 @@
 import argparse
 import warnings
+from collections import deque
 
 from Segmentation.segnet_mobile.segnet import mobilenet_segnet
 from Segmentation.zebra_crossing import WIDTH, HEIGHT, NCLASSES
@@ -24,13 +25,12 @@ nn_budget = None
 nms_max_overlap = 0.45
 min_box_area = 2500
 
-# Track model settings
-
-
 # Global variables
 flow_count = 0
 cars_crossing_line = set()
 tracker_db = {}
+# Cars center set
+pts = [deque(maxlen=30) for _ in range(9999)]
 
 
 def get_args():
@@ -61,9 +61,9 @@ def load_models():
 def update_tracker(image, detection_model, encoder, tracker_model):
     # Start object detection
     img = Image.fromarray(image[..., ::-1])
-    boxs, class_names = detection_model.detect_image(img)
+    boxs, class_names, confidence = detection_model.detect_image(img)
     features = encoder(image, boxs)
-    detections = [Detection(bbox, 1.0, feature, class_name) for bbox, feature, class_name in
+    detections = [Detection(bbox, confidence, feature, class_name) for bbox, feature, class_name in
                   zip(boxs, features, class_names)]
     # Run NMS
     boxes = np.array([d.tlwh for d in detections])
@@ -125,9 +125,9 @@ def get_result(args, models, dataloader, save_dir):
                     if track.category == "car":
                         roi = np.array(frame)[int(tlwh[1]): int(tlwh[1] + tlwh[3]), 
                               int(tlwh[0]):int(tlwh[0] + tlwh[2]), :]
-                        tracker_db[track.track_id] = Car(track.track_id, tlwh, roi, lanes, confidence=0)
+                        tracker_db[track.track_id] = Car(track.track_id, tlwh, roi, lanes, confidence=track.confidence)
                     else:
-                        tracker_db[track.track_id] = Person(track.track_id, tlwh, confidence=0)
+                        tracker_db[track.track_id] = Person(track.track_id, tlwh, confidence=track.confidence)
                 # Get all tracks in this frame, will be used in plotting
                 if track.category == "car":
                     online_cars_ids.append(track.track_id)
@@ -140,6 +140,8 @@ def get_result(args, models, dataloader, save_dir):
                             cars_crossing_line.add(track.track_id)
                     # Update car object with environment
                     tracker_db[track.track_id].update(tlwh, traffic_light_color)
+                    # Update cars center set to plot motion path
+                    pts[track.track_id].append(tracker_db[track.track_id].bbox.center)
                 elif track.category == "person":
                     online_persons_ids.append(track.track_id)
                     tracker_db[track.track_id].update(tlwh)
@@ -155,6 +157,7 @@ def get_result(args, models, dataloader, save_dir):
         online_im = plot_video_info(np.array(frame), frame_id=frame_id, fps=1. / timer.average_time)
         online_im = plot_flow_statistics(online_im, flow_count)
         online_im = plot_cars_rect(online_im, online_cars_ids, tracker_db)
+        online_im = plot_cars_motion(online_im, pts)
         online_im = plot_persons_rect(online_im, online_persons_ids, tracker_db)
         online_im = plot_traffic_bboxes(online_im, traffic_lights_bboxes)
 
