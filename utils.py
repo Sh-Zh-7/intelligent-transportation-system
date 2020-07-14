@@ -55,6 +55,7 @@ def process_frame(
         frame,
         tracker,
         lanes,
+        all_car_info,
         traffic_light_color,
         online_cars_ids,
         online_persons_ids,
@@ -68,7 +69,6 @@ def process_frame(
     global flow_count
     global cars_crossing_line
 
-    all_car_info = ""
     for track in tracker.tracks:
         if not track.is_confirmed() or track.time_since_update > 1:
             continue
@@ -115,7 +115,7 @@ def process_frame(
     for car_id in online_cars_ids:
         tracker_db[car_id].set_not_wait_for_person(tracker_db, online_persons_ids, zebra_rect)
         # Saving tracking results, for UI information
-        all_car_info += (str(frame_id) + "," + str(tracker_db[car_id]))
+        all_car_info += (str(frame_id / fps) + "," + str(tracker_db[car_id]))
     timer.toc()
 
     # Plot part

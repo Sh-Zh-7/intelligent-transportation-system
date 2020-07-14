@@ -31,8 +31,6 @@ min_box_area = 2500
 tracker_db = {}
 # Cars center set
 pts = [deque(maxlen=30) for _ in range(9999)]
-
-
 def load_models():
     # YOLO v4
     yolo = Yolo4()
@@ -88,12 +86,12 @@ def get_result(video_path, image_path, output_dir, models, fps):
         online_persons_ids = []
 
         frame_id, all_car_info = process_frame(
-            frame, tracker, lanes,
+            frame, tracker, lanes, all_car_info,
             traffic_light_color, online_cars_ids,
             online_persons_ids, zebra_rect, traffic_lights_bboxes,
             frame_id, timer, save_dir, fps)
         # Add your code here...
-        print(frame_id)
+        # print(frame_id)
 
     # Dump it into .txt file
     with open(os.path.join(output_dir, "result.txt"), "w") as f:
@@ -117,6 +115,6 @@ if __name__ == '__main__':
     image_path = args.input_background
     output_dir = args.output_dir
     # Get result
-    fps = get_video_fps(video_path)
+    fps = get_video_fps(video_path)     # For calculate cars' speed
     get_result(video_path, image_path, output_dir, models, fps)
     

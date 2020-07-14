@@ -93,11 +93,9 @@ class Car(Track):
     def __str__(self):
         output_license_plate_content = self.license_plate if self.license_plate else "None"
         return \
-    str(self.id) + "," + str(self.confidence) + "," + \
-    str(self.bbox.x1) + "," + str(self.bbox.y1) + "," + str(self.bbox.w) + "," + str(self.bbox.h) + "," + \
-    output_license_plate_content + "," + str(self.license_confidence) + "," + \
+    str(self.id) + "," + output_license_plate_content + "," + \
     str(int(self.is_crossing_line)) + "," + str(int(self.not_wait_for_person)) + "," + \
-    str(int(self.drive_without_guidance)) + "," + str(int(self.run_the_red_light)) + "," + str(self.speed) + "\n"
+    str(int(self.drive_without_guidance)) + "," + str(int(self.run_the_red_light)) + "\n"
 
     def update(self, tlwh, environment, fps):
         self.set_positions(tlwh)
@@ -193,8 +191,12 @@ class Car(Track):
     def set_speed(self, fps):
         ppm = 8.8   # Pixels per meter
         new_center, old_center = self.history_center.get_2_elements()
-        pixels = math.sqrt(math.pow(new_center[0] - old_center[0], 2) + math.pow(new_center[1] - new_center[1], 2))
-        self.speed = pixels / ppm * fps * 3.6
+        try:
+            pixels = math.sqrt(math.pow(new_center[0] - old_center[0], 2) + math.pow(new_center[1] - new_center[1], 2))
+            self.speed = pixels / ppm * fps * 3.6
+        except TypeError:
+            # For NoneType error
+            pass
 
 
 class Person(Track):

@@ -8,7 +8,7 @@ def license_plate_recognize(car_img):
     """
     try:
         result = HyperLPR_plate_recognition(car_img)
-        if len(result[0][0]) == 7:
+        if len(result[0][0].decode('utf-8')) == 7:
             return result[0][0], result[0][1]
         else:
             return "Can't recognize", 0
@@ -24,4 +24,4 @@ if __name__ == '__main__':
     cv2.imshow("title", src)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    license_plate_recognize(src)
+    print(license_plate_recognize(src))
