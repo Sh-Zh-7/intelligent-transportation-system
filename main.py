@@ -90,8 +90,6 @@ def get_result(video_path, image_path, output_dir, models, fps):
             traffic_light_color, online_cars_ids,
             online_persons_ids, zebra_rect, traffic_lights_bboxes,
             frame_id, timer, save_dir, fps)
-        # Add your code here...
-        # print(frame_id)
 
     # Dump it into .txt file
     with open(os.path.join(output_dir, "result.txt"), "w") as f:
@@ -99,7 +97,7 @@ def get_result(video_path, image_path, output_dir, models, fps):
 
     # Convert images to video
     output_video_path = os.path.join(output_dir, "result.mp4")
-    cmd_str = "ffmpeg -f image2 -i {}/%05d.jpg -b 5000k -c:v mpeg4 {}".format(os.path.join(output_dir, "frame"),
+    cmd_str = "ffmpeg -f image2 -i {}/%05d.jpg -b 5000k -c:v libx264 {}".format(os.path.join(output_dir, "frame"),
                                                                               output_video_path)
     os.system(cmd_str)
 
