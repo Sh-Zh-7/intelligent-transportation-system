@@ -101,10 +101,7 @@ def get_result(video_path, image_path, output_dir, models, fps):
                                                                               output_video_path)
     os.system(cmd_str)
 
-
-if __name__ == '__main__':
-    # Introduce how to use
-    args = get_args()
+def main(args):
     # Load models
     models = load_models()
 
@@ -115,4 +112,9 @@ if __name__ == '__main__':
     # Get result
     fps = get_video_fps(video_path)     # For calculate cars' speed
     get_result(video_path, image_path, output_dir, models, fps)
+
+
+if __name__ == '__main__':
+    main(get_args())
+
     

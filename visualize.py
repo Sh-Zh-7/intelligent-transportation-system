@@ -64,28 +64,34 @@ def plot_cars_rect(image, cars_id, tracker_db, color=(0, 0, 255), font_color=(25
 
         # Decide text's content
         if car.license_confidence != 0:
-            label_left = "{}".format(car.license_plate)
+            label_left1 = "{}".format(car.license_plate)
         else:
-            label_left = "{}".format("car")
+            label_left1 = "{}".format("car")
+        label_left2 = "ID: {}".format(str(car_id))
         label_right = str(round(car.confidence, 2))
         # Decide text's size
         draw = ImageDraw.Draw(image)
-        left_label_size = draw.textsize(label_left, font)
+        left_label_size1 = draw.textsize(label_left1, font)
+        left_label_size2 = draw.textsize(label_left2, font)
         right_label_size = draw.textsize(label_right, font)
         # Decide text's position
-        if car.bbox.x1 - left_label_size[1] >= 0:
-            text_origin_left = np.array([car.bbox.x1, car.bbox.y1 - left_label_size[1]])
+        if car.bbox.x1 - left_label_size1[1] >= 0:
+            text_origin_left1 = np.array([car.bbox.x1, car.bbox.y1 - left_label_size1[1]])
         else:
-            text_origin_left = np.array([car.bbox.x1, car.bbox.y1 + 1])
+            text_origin_left1 = np.array([car.bbox.x1, car.bbox.y1 + 1])
+        text_origin_left2 = np.array([car.bbox.x1, car.bbox.y1 - left_label_size1[1] - left_label_size2[1]])
         if car.bbox.x1 + car.bbox.w - right_label_size[1] >= 0:
-            text_origin_right = np.array([car.bbox.x1 + car.bbox.w - right_label_size[0], car.bbox.y1 - left_label_size[1]])
+            text_origin_right = np.array([car.bbox.x1 + car.bbox.w - right_label_size[0],
+                                          car.bbox.y1 - left_label_size1[1]])
         else:
             text_origin_right = np.array([car.bbox.x1 + car.bbox.w - right_label_size[0], car.bbox.y1 + 1])
         # Draw the text
-        draw.rectangle([tuple(text_origin_left), tuple(text_origin_left + left_label_size)], fill=color)
-        draw.text(text_origin_left, label_left, fill=font_color, font=font, stroke_width=stroke_width)
+        draw.rectangle([tuple(text_origin_left1), tuple(text_origin_left1 + left_label_size1)], fill=color)
+        draw.text(text_origin_left1, label_left1, fill=font_color, font=font, stroke_width=stroke_width)
+        draw.rectangle([tuple(text_origin_left2), tuple(text_origin_left2 + left_label_size2)], fill=color)
+        draw.text(text_origin_left2, label_left2, fill=font_color, font=font, stroke_width=stroke_width)
         # Pretty print
-        if text_origin_left[0] + left_label_size[0] < text_origin_right[0]:
+        if text_origin_left1[0] + left_label_size1[0] < text_origin_right[0]:
             draw.rectangle([tuple(text_origin_right), tuple(text_origin_right + right_label_size)], fill=color)
             draw.text(text_origin_right, label_right, fill=font_color, font=font, stroke_width=stroke_width)
 
