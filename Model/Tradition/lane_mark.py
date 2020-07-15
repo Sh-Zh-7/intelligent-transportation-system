@@ -1,5 +1,5 @@
 import os
-from Tradition.utils import *
+from Model.Tradition.utils import *
 
 class LaneMarkDirection:
     LEFT = 0

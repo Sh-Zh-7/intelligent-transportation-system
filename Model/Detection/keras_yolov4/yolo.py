@@ -5,15 +5,15 @@ import numpy as np
 from keras import backend as K
 from keras.layers import Input
 
-from Detection.keras_yolov4.yolo4.model import yolo_eval, yolo4_body
-from Detection.keras_yolov4.yolo4.utils import letterbox_image
+from Model.Detection.keras_yolov4.yolo4.model import yolo_eval, yolo4_body
+from Model.Detection.keras_yolov4.yolo4.utils import letterbox_image
 
 score = 0.4
 iou = 0.5
 
-model_path = 'Detection/keras_yolov4/model_data/yolo4_weight.h5'
-anchors_path = 'Detection/keras_yolov4/model_data/yolo4_anchors.txt'
-classes_path = 'Detection/keras_yolov4/model_data/coco_classes.txt'
+model_path = './Model/Detection/keras_yolov4/model_data/yolo4_weight.h5'
+anchors_path = './Model/Detection/keras_yolov4/model_data/yolo4_anchors.txt'
+classes_path = './Model/Detection/keras_yolov4/model_data/coco_classes.txt'
 
 class Yolo4:
     def get_class(self):

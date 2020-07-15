@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 import numpy as np
 from sklearn.utils.linear_assignment_ import linear_assignment
-import Tracking.DeepSort.deep_sort.kalman_filter as kalman_filter
+import Model.Tracking.DeepSort.deep_sort.kalman_filter as kalman_filter
 
 
 INFTY_COST = 1e+5

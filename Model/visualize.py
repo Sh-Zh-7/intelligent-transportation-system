@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageFont, ImageDraw
-from Detection.traffic_light import get_traffic_light_color
+from Model.Detection.traffic_light import get_traffic_light_color
 
 color_str_tuple_map = {"green": (0, 255, 0), "red": (0, 0, 255), "yellow": (0, 255, 255), "black": (0, 0, 0)}
 
@@ -57,7 +57,7 @@ def plot_cars_rect(image, cars_id, tracker_db, color=(0, 0, 255), font_color=(25
     """
     # Set font type and thickness
     image = Image.fromarray(image.copy())
-    font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
+    font = ImageFont.truetype(font="./Model/Detection/keras_yolov4/font/SimSun.ttf",
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
     for car_id in cars_id:
         car = tracker_db[car_id]
@@ -114,7 +114,7 @@ def plot_persons_rect(image, persons_id, tracker_db, color=(255, 0, 0)):
     """
     # Set font type and thickness
     image = Image.fromarray(image.copy())
-    font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
+    font = ImageFont.truetype(font="./Model/Detection/keras_yolov4/font/SimSun.ttf",
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
 
     for person_id in persons_id:
@@ -146,7 +146,7 @@ def plot_traffic_bboxes(image, traffic_lights_bboxes):
     :return: plotted images
     """
     image = Image.fromarray(image.copy())
-    font = ImageFont.truetype(font="./Detection/keras_yolov4/font/SimSun.ttf",
+    font = ImageFont.truetype(font="./Model/Detection/keras_yolov4/font/SimSun.ttf",
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
     # Traffic light result
     for bbox in traffic_lights_bboxes:

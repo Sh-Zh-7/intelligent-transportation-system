@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from Detection.keras_yolov4.yolo import Yolo4
-import Tracking.video as video
+from Model.Detection.keras_yolov4.yolo import Yolo4
+import Model.Tracking.video as video
 from PIL import Image
 import matplotlib.pyplot as plt
 
@@ -63,7 +63,7 @@ def get_traffic_light_color(img):
 
 
 if __name__ == '__main__':
-    dataloader = video.Video("../Videos/video-01.avi")
+    dataloader = video.Video("../data/video-01.avi")
     # Image with static background
     img = dataloader.get_one_frame()
     img = Image.fromarray(img[..., ::-1])

@@ -1,4 +1,3 @@
-from Segmentation.segnet_mobile.segnet import mobilenet_segnet
 from PIL import Image
 import numpy as np
 import cv2

@@ -3,7 +3,7 @@ import math
 import cv2
 from enum import Enum, unique
 
-from LPR import lpr
+from Model.LPR import lpr
 
 
 @unique

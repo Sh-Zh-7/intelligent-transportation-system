@@ -1,5 +1,5 @@
-from Tradition.geometry import *
-from Tradition.lane_mark import *
+from Model.Tradition.geometry import *
+from Model.Tradition.lane_mark import *
 
 import warnings
 warnings.filterwarnings("ignore")

@@ -12,7 +12,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.models import Model
 from keras.regularizers import l2
 
-from Detection.keras_yolov4.yolo4.utils import compose
+from Model.Detection.keras_yolov4.yolo4.utils import compose
 
 class Mish(Layer):
     '''

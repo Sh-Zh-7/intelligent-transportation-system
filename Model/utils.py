@@ -3,12 +3,12 @@
 import argparse
 import os
 
-from Tracking.DeepSort.deep_sort import preprocessing
-from Tracking.DeepSort.deep_sort.detection import Detection
+from Model.Tracking.DeepSort.deep_sort import preprocessing
+from Model.Tracking.DeepSort.deep_sort.detection import Detection
 
-from visualize import *
-from categories import Car, Person
-from main import tracker_db, pts, min_box_area
+from Model.visualize import *
+from Model.categories import Car, Person
+from Model.main import tracker_db, pts, min_box_area
 
 # Global variables
 flow_count = 0
@@ -16,9 +16,9 @@ cars_crossing_line = set()
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_video", type=str, default="./Videos/video-01.avi", help="position of your video")
-    parser.add_argument("--input_background", type=str, default="./Videos/background_1.png", help="position")
-    parser.add_argument("--output_dir", type=str, default="./Result",
+    parser.add_argument("--input_video", type=str, default="./data/video-01.avi", help="position of your video")
+    parser.add_argument("--input_background", type=str, default="./data/background_1.png", help="position")
+    parser.add_argument("--output_dir", type=str, default="./result",
                         help="position to store each frame and result video")
 
     args = parser.parse_args()

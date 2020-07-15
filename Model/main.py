@@ -6,20 +6,20 @@ from collections import deque
 warnings.filterwarnings("ignore")
 
 # Detection import
-from Detection.keras_yolov4.yolo import Yolo4
+from Model.Detection.keras_yolov4.yolo import Yolo4
 # Tracking import
-import Tracking.video as video
-from Tracking.DeepSort.deep_sort import nn_matching
-from Tracking.DeepSort.deep_sort.tracker import Tracker
-from Tracking.DeepSort.tools import generate_detections as gdet
-from Tracking.utils import *
+import Model.Tracking.video as video
+from Model.Tracking.DeepSort.deep_sort import nn_matching
+from Model.Tracking.DeepSort.deep_sort.tracker import Tracker
+from Model.Tracking.DeepSort.tools import generate_detections as gdet
+from Model.Tracking.utils import *
 # Segmentation import
-from Segmentation.segnet_mobile.segnet import mobilenet_segnet
-from Segmentation.zebra_crossing import WIDTH, HEIGHT, NCLASSES
+from Model.Segmentation.segnet_mobile.segnet import mobilenet_segnet
+from Model.Segmentation.zebra_crossing import WIDTH, HEIGHT, NCLASSES
 
 # Utils
-from background import static_process
-from utils import *
+from Model.background import static_process
+from Model.utils import *
 
 # Hyper parameters for tracking
 max_cosine_distance = 0.5
@@ -37,11 +37,11 @@ def load_models():
     # Deep sort
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     tracker = Tracker(metric)
-    model_filename = "./Tracking/DeepSort/model_data/market1501.pb"
+    model_filename = "./Model/Tracking/DeepSort/model_data/market1501.pb"
     encoder = gdet.create_box_encoder(model_filename, batch_size=1)
     # Mobile net and segnet
     ms_model = mobilenet_segnet(n_classes=NCLASSES, input_height=HEIGHT, input_width=WIDTH)
-    ms_model.load_weights("./Segmentation/segnet_mobile/weights.h5")
+    ms_model.load_weights("./Model/Segmentation/segnet_mobile/weights.h5")
 
     return yolo, tracker, encoder, ms_model
 
