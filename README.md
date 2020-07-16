@@ -26,7 +26,7 @@ With the AI entering the national strategic level agenda and the continuous inno
 
 Many users may find it too hard to deploy our project while we did not put it on the cloud instance for economic reasons. However, you can still see the effect by watching our  well prepared videos.
 
-**BiliBili**:
+**BiliBili**: [https://www.bilibili.com/video/BV1R5411Y7yL/](https://www.bilibili.com/video/BV1R5411Y7yL/)
 
 **Youtube**: [https://youtu.be/d30V_p2JPyM](https://youtu.be/d30V_p2JPyM)
 
