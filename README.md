@@ -28,7 +28,7 @@ Many users may find it too hard to deploy our project while we did not put it on
 
 **BiliBili**:
 
-**Youtube**:
+**Youtube**: [https://youtu.be/d30V_p2JPyM](https://youtu.be/d30V_p2JPyM)
 
 # Prerequisites
 
