@@ -105,7 +105,21 @@ You can see above that our implementation is very simple. That is because the re
 
 # How to use
 
+Firstly I strongly recommend using this model through command line and python script only, though we still provide a web page for you. However, the backend only starts a child process to execute the python script, so it is not stable enough in some situations. **Remember, model is the core component of this repository.**
 
+</br>
+
+If you still want to start a web server, you can follow these steps:
+
+set relative paths in Controller/index.js
+
+```shell
+cd Controller
+npm install
+npm run start
+```
+
+then you can visit https://127.0.0.1:8000 in browser to see this demo.
 
 # FAQ
 

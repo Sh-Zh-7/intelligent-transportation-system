@@ -1,0 +1,19 @@
+{
+  "name": "appback",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index",
+    "start": "node index"
+  },
+  "author": "Lotherxuan",
+  "license": "MIT",
+  "dependencies": {
+    "connect-history-api-fallback": "^1.6.0",
+    "express": "^4.17.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "multer": "^1.4.2"
+  }
+}

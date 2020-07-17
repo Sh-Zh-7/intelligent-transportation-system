@@ -263,3 +263,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# action on Controller folder
+/Controller/utils/bin/*
+!/Controller/utils/bin/.gitkeep
+!/Controller/dist
