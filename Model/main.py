@@ -96,7 +96,7 @@ def get_result(video_path, image_path, output_dir, models, fps):
         f.write(all_car_info)
 
     # Convert images to video
-    output_video_path = os.path.join(output_dir, "result.mp4")
+    output_video_path = os.path.join(output_dir, "output_video.mp4")
     cmd_str = "ffmpeg -f image2 -i {}/%05d.jpg -b 5000k -c:v libx264 {}".format(os.path.join(output_dir, "frame"),
                                                                               output_video_path)
     os.system(cmd_str)
