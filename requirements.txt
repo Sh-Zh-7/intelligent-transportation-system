@@ -13,7 +13,7 @@ Keras==2.3.1
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.2
 numpy==1.18.4
-opencv-python==3.4.9.33
+opencv-python==4.2.0.32
 Pillow==7.1.2
 protobuf==3.12.1
 PyYAML==5.3.1
