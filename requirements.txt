@@ -15,7 +15,7 @@ Keras-Preprocessing==1.1.2
 numpy==1.18.4
 opencv-python==3.4.9.33
 Pillow==7.1.2
-protobuf==3.12.1
+protobuf==3.15.0
 PyYAML==5.3.1
 scikit-learn==0.20.4
 scipy==1.4.1
